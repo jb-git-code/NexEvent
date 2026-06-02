@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/auth/home_page.dart';
@@ -13,22 +14,39 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   TextEditingController _email = TextEditingController();
   TextEditingController _password = TextEditingController();
+  TextEditingController _name = TextEditingController();
 
   Future<void> createAccount() async {
     try {
-      FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // FirebaseAuth.instance.createUserWithEmailAndPassword(
+      //   email: _email.text.trim(),
+      //   password: _password.text.trim(),
+      // );
+      final snackbar = SnackBar(content: Text('Account Created'));
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+      final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
-      final snackbar = SnackBar(content: Text('Account Created'));
+      await _firestore.collection("users").doc(credential.user!.uid).set({
+        "uid": credential.user!.uid,
+
+        "name": _name.text.trim(),
+
+        "email": _email.text.trim(),
+
+        "role": "student",
+      });
       await ScaffoldMessenger.of(context).showSnackBar(snackbar);
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
         (route) => false,
       );
-    } catch (e) {
-      print(e);
+    } on FirebaseAuthException catch (e) {
+      final e_snackbar = SnackBar(content: Text(e.toString()));
+      ScaffoldMessenger.of(context).showSnackBar(e_snackbar);
     }
   }
 
@@ -46,13 +64,28 @@ class _SignupScreenState extends State<SignupScreen> {
                 Text('Signup Screen', style: TextStyle(fontSize: 24)),
                 SizedBox(height: 20),
                 TextField(
+                  controller: _name,
+                  decoration: InputDecoration(
+                    hintText: 'name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 20),
+                TextField(
                   controller: _email,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    hintText: 'email',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 20),
                 TextField(
                   controller: _password,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'password',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 20),
                 Row(

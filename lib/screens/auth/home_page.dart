@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
+import 'package:nexevent/services/auth_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,12 +20,8 @@ class _HomePageState extends State<HomePage> {
 
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => loginScreen()),
-                (route) => false,
-              );
+            onPressed: () async {
+              await AuthService().logout();
             },
 
             icon: Icon(Icons.logout),

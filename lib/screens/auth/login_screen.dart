@@ -24,8 +24,8 @@ class _loginScreenState extends State<loginScreen> {
                 MaterialPageRoute(builder: (context) => HomePage()),
                 (route) => false,
               );
-    } catch (e) {
-      print(e);
+    } on FirebaseAuthException  catch (e) {
+      print(e.toString());
     }
   }
 

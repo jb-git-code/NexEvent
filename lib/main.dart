@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/firebase_options.dart';
+import 'package:nexevent/screens/auth/auth_gate.dart';
 import 'package:nexevent/screens/auth/home_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/auth/signup_screen.dart';
@@ -20,9 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primaryColor: Colors.deepOrange),
-      home: (FirebaseAuth.instance.currentUser != null)
-          ? HomePage()
-          : loginScreen(),
+      home: AuthGate(),
     );
   }
 }
