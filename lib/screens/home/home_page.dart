@@ -56,8 +56,11 @@ class _HomePageState extends State<HomePage> {
         },
         items: [
           BottomNavigationBarItem(label: 'Events', icon: Icon(Icons.event)),
-          BottomNavigationBarItem(label: 'My Events', icon: Icon(Icons.event)),
-          BottomNavigationBarItem(label: 'Profile', icon: Icon(Icons.event)),
+          BottomNavigationBarItem(
+            label: 'My Events',
+            icon: Icon(Icons.event_note_outlined),
+          ),
+          BottomNavigationBarItem(label: 'Profile', icon: Icon(Icons.settings)),
         ],
       ),
     );
