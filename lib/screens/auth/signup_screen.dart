@@ -20,21 +20,6 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> createAccount() async {
     try {
       final snackbar = SnackBar(content: Text('Account Created'));
-      // final FirebaseAuth _auth = FirebaseAuth.instance;
-      // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-      // final credential = await _auth.createUserWithEmailAndPassword(
-      //   email: _email.text.trim(),
-      //   password: _password.text.trim(),
-      // );
-      // await _firestore.collection("users").doc(credential.user!.uid).set({
-      //   "uid": credential.user!.uid,
-
-      //   "name": _name.text.trim(),
-
-      //   "email": _email.text.trim(),
-
-      //   "role": "student",
-      // });
       final authService = AuthService();
       authService.signUp(
         name: _name.text.trim(),

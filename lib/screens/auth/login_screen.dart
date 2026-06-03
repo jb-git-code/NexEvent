@@ -14,10 +14,6 @@ class loginScreen extends StatefulWidget {
 class _loginScreenState extends State<loginScreen> {
   Future<void> signIn() async {
     try {
-      // FirebaseAuth.instance.signInWithEmailAndPassword(
-      //   email: _email.text.trim(),
-      //   password: _password.text.trim(),
-      // );
       final authService = AuthService();
       authService.login(
         email: _email.text.trim(),
