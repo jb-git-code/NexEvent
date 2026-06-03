@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
 class EventsPage extends StatefulWidget {
@@ -30,11 +31,26 @@ class _EventsPageState extends State<EventsPage> {
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
 
-              return Card(
-                color: Colors.teal,
-                child: ListTile(
-                  title: Text(data["name"]),
-                  subtitle: Text(data["venue"]),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventDetailPage(
+                        name: data["name"],
+                        eventId: data["eventId"],
+                        venue: data["venue"],
+                        description: data["description"],
+                      ),
+                    ),
+                  );
+                },
+                child: Card(
+                  color: Colors.teal,
+                  child: ListTile(
+                    title: Text(data["name"]),
+                    subtitle: Text(data["venue"]),
+                  ),
                 ),
               );
             },

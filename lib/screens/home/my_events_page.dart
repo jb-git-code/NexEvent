@@ -10,10 +10,6 @@ class MyEventsPage extends StatefulWidget {
 class _MyEventsPageState extends State<MyEventsPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('My Events Page'),
-      ),
-    );
+    return Scaffold(body: Center(child: Text("No Registered Events")));
   }
 }
