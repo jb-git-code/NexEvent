@@ -40,7 +40,7 @@ class AuthService {
   Future<void> logout() async {
     print("Logout clicked");
     await _auth.signOut();
-  
+    
     print("Logout done");
   }
 }

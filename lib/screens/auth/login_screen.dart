@@ -18,7 +18,7 @@ class _loginScreenState extends State<loginScreen> {
         password: _password.text.trim(),
       );
       final snackbar = SnackBar(content: Text('Success Login'));
-      await ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
        Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => HomePage()),
@@ -47,12 +47,17 @@ class _loginScreenState extends State<loginScreen> {
                 SizedBox(height: 20),
                 TextField(
                   controller: _email,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    hintText: 'email',
+                    border: OutlineInputBorder()),
                 ),
                 SizedBox(height: 20),
                 TextField(
+                  obscureText: true,
                   controller: _password,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    hintText: 'password',
+                    border: OutlineInputBorder()),
                 ),
                 SizedBox(height: 20),
                 Row(
