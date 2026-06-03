@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/auth/home_page.dart';
 import 'package:nexevent/screens/auth/signup_screen.dart';
+import 'package:nexevent/services/auth_service.dart';
 
 class loginScreen extends StatefulWidget {
   const loginScreen({super.key});
@@ -13,18 +14,23 @@ class loginScreen extends StatefulWidget {
 class _loginScreenState extends State<loginScreen> {
   Future<void> signIn() async {
     try {
-      FirebaseAuth.instance.signInWithEmailAndPassword(
+      // FirebaseAuth.instance.signInWithEmailAndPassword(
+      //   email: _email.text.trim(),
+      //   password: _password.text.trim(),
+      // );
+      final authService = AuthService();
+      authService.login(
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
       final snackbar = SnackBar(content: Text('Success Login'));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
-       Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => HomePage()),
-                (route) => false,
-              );
-    } on FirebaseAuthException  catch (e) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
       print(e.toString());
     }
   }
@@ -49,7 +55,8 @@ class _loginScreenState extends State<loginScreen> {
                   controller: _email,
                   decoration: InputDecoration(
                     hintText: 'email',
-                    border: OutlineInputBorder()),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 20),
                 TextField(
@@ -57,7 +64,8 @@ class _loginScreenState extends State<loginScreen> {
                   controller: _password,
                   decoration: InputDecoration(
                     hintText: 'password',
-                    border: OutlineInputBorder()),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 20),
                 Row(

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/auth/home_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
+import 'package:nexevent/services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -18,27 +19,29 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> createAccount() async {
     try {
-      // FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final snackbar = SnackBar(content: Text('Account Created'));
+      // final FirebaseAuth _auth = FirebaseAuth.instance;
+      // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      // final credential = await _auth.createUserWithEmailAndPassword(
       //   email: _email.text.trim(),
       //   password: _password.text.trim(),
       // );
-      final snackbar = SnackBar(content: Text('Account Created'));
-      final FirebaseAuth _auth = FirebaseAuth.instance;
-      final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-      final credential = await _auth.createUserWithEmailAndPassword(
+      // await _firestore.collection("users").doc(credential.user!.uid).set({
+      //   "uid": credential.user!.uid,
+
+      //   "name": _name.text.trim(),
+
+      //   "email": _email.text.trim(),
+
+      //   "role": "student",
+      // });
+      final authService = AuthService();
+      authService.signUp(
+        name: _name.text.trim(),
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
-      await _firestore.collection("users").doc(credential.user!.uid).set({
-        "uid": credential.user!.uid,
-
-        "name": _name.text.trim(),
-
-        "email": _email.text.trim(),
-
-        "role": "student",
-      });
-      await ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
