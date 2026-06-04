@@ -45,12 +45,19 @@ class _EventsPageState extends State<EventsPage> {
                     ),
                   );
                 },
-                child: Card(
-                  color: Colors.teal,
-                  child: ListTile(
-                    title: Text(data["name"]),
-                    subtitle: Text(data["venue"]),
-                  ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        color: Colors.grey[400],
+                        child: ListTile(
+                          title: Text(data["name"]),
+                          subtitle: Text(data["venue"]),
+                        ),
+                      ),
+                    ),
+                    IconButton(onPressed: () {}, icon: Icon(Icons.delete)),
+                  ],
                 ),
               );
             },

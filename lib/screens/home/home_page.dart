@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
@@ -27,8 +28,17 @@ class _HomePageState extends State<HomePage> {
 
         actions: [
           IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateEventPage()),
+              );
+            },
+            icon: Icon(Icons.admin_panel_settings),
+          ),
+          IconButton(
             onPressed: () async {
-              final authService = new AuthService();
+              final authService =  AuthService();
               await authService.logout();
               Navigator.pushAndRemoveUntil(
                 context,
