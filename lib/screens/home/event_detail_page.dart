@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nexevent/screens/admin/edit_event_page.dart';
 
 class EventDetailPage extends StatelessWidget {
   const EventDetailPage({
@@ -7,6 +8,7 @@ class EventDetailPage extends StatelessWidget {
     required this.eventId,
     required this.venue,
     required this.description,
+    required this.did,
   });
 
   final String name;
@@ -16,6 +18,8 @@ class EventDetailPage extends StatelessWidget {
   final String description;
 
   final String venue;
+
+  final String did;
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +33,7 @@ class EventDetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           width: 400,
-          height: 300,
-          color: Colors.teal[400],
+          height: 350,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -49,6 +52,21 @@ class EventDetailPage extends StatelessWidget {
               Text(
                 venue,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Colors.black),
+                  foregroundColor: WidgetStatePropertyAll(Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditEventPage(docId: did),
+                    ),
+                  );
+                },
+                child: Text('Update Event'),
               ),
             ],
           ),

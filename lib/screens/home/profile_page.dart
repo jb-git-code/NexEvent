@@ -17,11 +17,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('Profile Page'),
-      //   centerTitle: true,
-      //   backgroundColor: Colors.blue[200],
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
