@@ -10,6 +10,10 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
+  Future<void> deleteEv(String eid) async {
+    await FirestoreService().deleteEvent(eid);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +60,12 @@ class _EventsPageState extends State<EventsPage> {
                         ),
                       ),
                     ),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.delete)),
+                    IconButton(
+                      onPressed: () async {
+                        deleteEv(docs[index].id);
+                      },
+                      icon: Icon(Icons.delete),
+                    ),
                   ],
                 ),
               );
