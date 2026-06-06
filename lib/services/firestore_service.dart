@@ -33,4 +33,11 @@ class FirestoreService {
         .doc(registration.registrationId)
         .set(registration.toMap());
   }
+
+  Future<void> cancelRegistration(String registrationId) async {
+    await FirebaseFirestore.instance
+        .collection("registrations")
+        .doc(registrationId)
+        .delete();
+  }
 }
