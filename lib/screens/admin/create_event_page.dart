@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/services/storage_services.dart';
 import 'package:uuid/uuid.dart';
 
 class CreateEventPage extends StatefulWidget {
@@ -16,15 +19,34 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _controller3 = TextEditingController();
   final TextEditingController _controller4 = TextEditingController();
 
+  File? imageFile;
+  final ImagePicker picker = ImagePicker();
+
+  Future<void> pickImage() async {
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        imageFile = File(image.path);
+      });
+    }
+
+    imageFile == null
+        ? const Text("No Image Selected")
+        : Image.file(imageFile!, height: 150);
+  }
+
   Future<void> createEvent() async {
     try {
       final uid = Uuid().v4();
+      String imageUrl = await StorageService().uploadPoster(imageFile!, uid);
       await FirebaseFirestore.instance.collection('events').doc(uid).set({
         "eventId": uid,
         "name": _controller1.text.trim(),
         "description": _controller2.text.trim(),
         "venue": _controller3.text.trim(),
         "category": _controller4.text.trim(),
+        "imageUrl":imageUrl,
       });
       final snackbar = SnackBar(content: Text('Event Created'));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
@@ -80,6 +102,14 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     hintText: 'category',
                     border: OutlineInputBorder(),
                   ),
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.grey),
+                    foregroundColor: WidgetStatePropertyAll(Colors.white),
+                  ),
+                  onPressed: pickImage,
+                  child: const Text("Choose Poster"),
                 ),
                 TextButton(
                   style: ButtonStyle(
