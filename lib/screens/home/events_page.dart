@@ -63,7 +63,29 @@ class _EventsPageState extends State<EventsPage> {
                     ),
                     IconButton(
                       onPressed: () async {
-                        deleteEv(docs[index].id);
+                        showDialog(
+                          context: context,
+                          builder: (_) {
+                            return AlertDialog(
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    deleteEv(docs[index].id);
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('Yes'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('No'),
+                                ),
+                              ],
+                              title: Text("Delete Event?"),
+                            );
+                          },
+                        );
                       },
                       icon: Icon(Icons.delete),
                     ),
