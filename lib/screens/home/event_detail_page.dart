@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/models/registration_model.dart';
@@ -89,13 +90,28 @@ class EventDetailPage extends StatelessWidget {
                       onPressed: () async {
                         String regId = const Uuid().v4();
                         String useId = FirebaseAuth.instance.currentUser!.uid;
-                        await FirestoreService().registerEvent(
-                          RegistrationModel(
-                            registrationId: regId,
-                            eventId: eventId,
-                            userId: useId,
-                          ),
-                        );
+
+                        final query = await FirebaseFirestore.instance
+                            .collection("registrations")
+                            .where("userId", isEqualTo: useId)
+                            .where("eventId", isEqualTo: eventId)
+                            .get();
+                        if (query.docs.isEmpty) {
+                          await FirestoreService().registerEvent(
+                            RegistrationModel(
+                              registrationId: regId,
+                              eventId: eventId,
+                              userId: useId,
+                            ),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Registered")),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Already Registered")),
+                          );
+                        }
                       },
                       child: const Text("Register"),
                     ),

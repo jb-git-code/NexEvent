@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nexevent/screens/home/event_detail_page.dart';
+import 'package:nexevent/services/firestore_service.dart';
 
 class MyEventsPage extends StatefulWidget {
   const MyEventsPage({super.key});
@@ -10,6 +12,54 @@ class MyEventsPage extends StatefulWidget {
 class _MyEventsPageState extends State<MyEventsPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text("No Registered Events")));
+    return Scaffold(
+      body: StreamBuilder(
+        stream: FirestoreService().getEvents("registrations"),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return CircularProgressIndicator();
+          }
+
+          final docs = snapshot.data!.docs;
+
+          print('success');
+
+          return ListView.builder(
+            padding: EdgeInsets.all(16),
+
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventDetailPage(
+                        name: data["name"],
+                        eventId: data["eventId"],
+                        venue: data["venue"],
+                        description: data["description"],
+                        did: data["eventId"],
+                      ),
+                    ),
+                  );
+                },
+                child: Expanded(
+                  child: Card(
+                    color: Colors.grey[400],
+                    child: ListTile(
+                      title: Text(data["name"]),
+                      subtitle: Text(data["venue"]),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }

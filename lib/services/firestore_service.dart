@@ -5,8 +5,8 @@ import 'package:nexevent/models/registration_model.dart';
 class FirestoreService {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Stream<QuerySnapshot> getEvents() {
-    return firestore.collection("events").snapshots();
+  Stream<QuerySnapshot> getEvents(String eve) {
+    return firestore.collection(eve).snapshots();
   }
 
   Future<void> createEvent(EventModel event) async {
