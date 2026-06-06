@@ -11,7 +11,6 @@ class CreateEventPage extends StatefulWidget {
 }
 
 class _CreateEventPageState extends State<CreateEventPage> {
-  final TextEditingController _controller0 = TextEditingController();
   final TextEditingController _controller1 = TextEditingController();
   final TextEditingController _controller2 = TextEditingController();
   final TextEditingController _controller3 = TextEditingController();
@@ -21,7 +20,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     try {
       final uid = Uuid().v4();
       await FirebaseFirestore.instance.collection('events').doc(uid).set({
-        "eventId": _controller0.text.trim(),
+        "eventId": uid,
         "name": _controller1.text.trim(),
         "description": _controller2.text.trim(),
         "venue": _controller3.text.trim(),
@@ -54,13 +53,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TextField(
-                  controller: _controller0,
-                  decoration: InputDecoration(
-                    hintText: 'eventId',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
                 TextField(
                   controller: _controller1,
                   decoration: InputDecoration(

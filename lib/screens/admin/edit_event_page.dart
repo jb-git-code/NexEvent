@@ -38,13 +38,6 @@ class _EditEventPageState extends State<EditEventPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 TextField(
-                  controller: _controller5,
-                  decoration: InputDecoration(
-                    hintText: 'eventId',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                TextField(
                   controller: _controller1,
                   decoration: InputDecoration(
                     hintText: 'name',
@@ -80,7 +73,7 @@ class _EditEventPageState extends State<EditEventPage> {
                   onPressed: () async {
                     await FirestoreService().updateEvent(
                       EventModel(
-                        eventId: _controller5.text.trim(),
+                        eventId: widget.docId,
                         name: _controller1.text.trim(),
                         description: _controller2.text.trim(),
                         venue: _controller3.text.trim(),

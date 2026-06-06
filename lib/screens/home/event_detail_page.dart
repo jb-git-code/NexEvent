@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
+import 'package:nexevent/services/firestore_service.dart';
+import 'package:uuid/uuid.dart';
 
 class EventDetailPage extends StatelessWidget {
   const EventDetailPage({
@@ -53,20 +57,50 @@ class EventDetailPage extends StatelessWidget {
                 venue,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              TextButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll(Colors.black),
-                  foregroundColor: WidgetStatePropertyAll(Colors.white),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditEventPage(docId: did),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.black),
+                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditEventPage(docId: did),
+                          ),
+                        );
+                      },
+                      child: Text('Update Event'),
                     ),
-                  );
-                },
-                child: Text('Update Event'),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.black),
+                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                      ),
+                      onPressed: () async {
+                        String regId = const Uuid().v4();
+                        String useId = FirebaseAuth.instance.currentUser!.uid;
+                        await FirestoreService().registerEvent(
+                          RegistrationModel(
+                            registrationId: regId,
+                            eventId: eventId,
+                            userId: useId,
+                          ),
+                        );
+                      },
+                      child: const Text("Register"),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
