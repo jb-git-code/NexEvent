@@ -44,6 +44,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                         venue: data["venue"],
                         description: data["description"],
                         did: data["eventId"],
+                        imageUrl: "",
                       ),
                     ),
                   );

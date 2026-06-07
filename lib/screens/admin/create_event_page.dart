@@ -29,6 +29,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
       setState(() {
         imageFile = File(image.path);
       });
+      final snackbar = SnackBar(content: Text('Image Selected'));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
 
     imageFile == null
@@ -46,7 +48,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
         "description": _controller2.text.trim(),
         "venue": _controller3.text.trim(),
         "category": _controller4.text.trim(),
-        "imageUrl":imageUrl,
+        "imageUrl": imageUrl,
       });
       final snackbar = SnackBar(content: Text('Event Created'));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);

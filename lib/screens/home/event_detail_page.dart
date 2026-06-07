@@ -14,6 +14,7 @@ class EventDetailPage extends StatelessWidget {
     required this.venue,
     required this.description,
     required this.did,
+    required this.imageUrl,
   });
 
   final String name;
@@ -26,6 +27,8 @@ class EventDetailPage extends StatelessWidget {
 
   final String did;
 
+  final String imageUrl;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,11 +40,17 @@ class EventDetailPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
-          width: 400,
-          height: 350,
+          width: double.infinity,
+          height: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              Container(
+                child: Image(fit: BoxFit.cover, image: NetworkImage(imageUrl)),
+                height: 250,
+                width: 250,
+                color: Colors.red,
+              ),
               Text(
                 name,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

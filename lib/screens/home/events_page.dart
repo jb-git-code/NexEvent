@@ -46,6 +46,7 @@ class _EventsPageState extends State<EventsPage> {
                         venue: data["venue"],
                         description: data["description"],
                         did: docs[index].id,
+                        imageUrl: data["imageUrl"],
                       ),
                     ),
                   );
