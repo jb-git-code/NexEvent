@@ -38,7 +38,7 @@ class EventDetailPage extends StatelessWidget {
         backgroundColor: Theme.of(context).primaryColorLight,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(24.0),
         child: Container(
           width: double.infinity,
           height: double.infinity,
@@ -52,19 +52,19 @@ class EventDetailPage extends StatelessWidget {
                 color: Colors.red,
               ),
               Text(
-                name,
+                'Name: $name',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Text(
-                eventId,
+                'Event ID: $eventId',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Description: $description',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Text(
-                description,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                venue,
+                'venue: $venue',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Row(
