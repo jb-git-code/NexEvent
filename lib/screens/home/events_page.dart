@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
+import 'package:nexevent/services/storage_services.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -72,6 +73,9 @@ class _EventsPageState extends State<EventsPage> {
                                 TextButton(
                                   onPressed: () {
                                     deleteEv(docs[index].id);
+                                    StorageService().deletePoster(
+                                      docs[index].id,
+                                    );
                                     Navigator.pop(context);
                                   },
                                   child: Text('Yes'),
