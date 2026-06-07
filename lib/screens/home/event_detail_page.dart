@@ -6,7 +6,7 @@ import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:uuid/uuid.dart';
 
-class EventDetailPage extends StatelessWidget {
+class EventDetailPage extends StatefulWidget {
   const EventDetailPage({
     super.key,
     required this.name,
@@ -30,6 +30,32 @@ class EventDetailPage extends StatelessWidget {
   final String imageUrl;
 
   @override
+  State<EventDetailPage> createState() => _EventDetailPageState();
+}
+
+class _EventDetailPageState extends State<EventDetailPage> {
+  String role = "";
+
+  Future<void> loadRole() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .get();
+
+    setState(() {
+      role = doc["role"];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadRole();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -46,25 +72,25 @@ class EventDetailPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Container(
-                child: Image(fit: BoxFit.cover, image: NetworkImage(imageUrl)),
+                child: Image(fit: BoxFit.cover, image: NetworkImage(widget.imageUrl)),
                 height: 250,
                 width: 250,
                 color: Colors.red,
               ),
               Text(
-                'Name: $name',
+                'Name: ${widget.name}',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Text(
-                'Event ID: $eventId',
+                'Event ID: ${widget.eventId}',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               Text(
-                'Description: $description',
+                'Description: ${widget.description}',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Text(
-                'venue: $venue',
+                'venue: ${widget.venue}',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Row(
@@ -72,7 +98,7 @@ class EventDetailPage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TextButton(
+                    child: (role == 'admin')?TextButton(
                       style: ButtonStyle(
                         backgroundColor: WidgetStatePropertyAll(Colors.black),
                         foregroundColor: WidgetStatePropertyAll(Colors.white),
@@ -81,12 +107,12 @@ class EventDetailPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditEventPage(docId: did),
+                            builder: (context) => EditEventPage(docId: widget.did),
                           ),
                         );
                       },
                       child: Text('Update Event'),
-                    ),
+                    ):const SizedBox(),
                   ),
 
                   Padding(
@@ -103,13 +129,13 @@ class EventDetailPage extends StatelessWidget {
                         final query = await FirebaseFirestore.instance
                             .collection("registrations")
                             .where("userId", isEqualTo: useId)
-                            .where("eventId", isEqualTo: eventId)
+                            .where("eventId", isEqualTo: widget.eventId)
                             .get();
                         if (query.docs.isEmpty) {
                           await FirestoreService().registerEvent(
                             RegistrationModel(
                               registrationId: regId,
-                              eventId: eventId,
+                              eventId: widget.eventId,
                               userId: useId,
                             ),
                           );

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
@@ -15,6 +16,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String role = "";
+  Future<void> loadRole() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .get();
+
+    setState(() {
+      role = doc["role"];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadRole();
+  }
+
   List<Widget> pages = [EventsPage(), MyEventsPage(), ProfilePage()];
   int _selectedIndex = 0;
   @override
@@ -27,18 +48,22 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).primaryColor,
 
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CreateEventPage()),
-              );
-            },
-            icon: Icon(Icons.admin_panel_settings),
-          ),
+          (role == 'admin')
+              ? IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateEventPage(),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.post_add_rounded),
+                )
+              : const SizedBox(),
           IconButton(
             onPressed: () async {
-              final authService =  AuthService();
+              final authService = AuthService();
               await authService.logout();
               Navigator.pushAndRemoveUntil(
                 context,

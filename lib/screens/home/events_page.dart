@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
@@ -13,6 +15,27 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   Future<void> deleteEv(String eid) async {
     await FirestoreService().deleteEvent(eid);
+  }
+
+  String role = "";
+
+  Future<void> loadRole() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .get();
+
+    setState(() {
+      role = doc["role"];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadRole();
   }
 
   @override
@@ -63,37 +86,39 @@ class _EventsPageState extends State<EventsPage> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () async {
-                        showDialog(
-                          context: context,
-                          builder: (_) {
-                            return AlertDialog(
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    deleteEv(docs[index].id);
-                                    StorageService().deletePoster(
-                                      docs[index].id,
-                                    );
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('Yes'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('No'),
-                                ),
-                              ],
-                              title: Text("Delete Event?"),
-                            );
-                          },
-                        );
-                      },
-                      icon: Icon(Icons.delete),
-                    ),
+                    (role == 'admin')
+                        ? IconButton(
+                            onPressed: () async {
+                              showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return AlertDialog(
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          deleteEv(docs[index].id);
+                                          StorageService().deletePoster(
+                                            docs[index].id,
+                                          );
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('Yes'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('No'),
+                                      ),
+                                    ],
+                                    title: Text("Delete Event?"),
+                                  );
+                                },
+                              );
+                            },
+                            icon: Icon(Icons.delete),
+                          )
+                        : const SizedBox(),
                   ],
                 ),
               );

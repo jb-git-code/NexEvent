@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nexevent/models/event_model.dart';
 import 'package:nexevent/models/registration_model.dart';
 
@@ -40,4 +41,14 @@ class FirestoreService {
         .doc(registrationId)
         .delete();
   }
+
+  Stream<QuerySnapshot> getUserRegistrations() {
+  return FirebaseFirestore.instance
+      .collection("registrations")
+      .where(
+        "userId",
+        isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+      )
+      .snapshots();
+}
 }
