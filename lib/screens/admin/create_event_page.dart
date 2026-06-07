@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/models/event_model.dart';
+import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/storage_services.dart';
 import 'package:uuid/uuid.dart';
 
@@ -18,38 +20,44 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _controller2 = TextEditingController();
   final TextEditingController _controller3 = TextEditingController();
   final TextEditingController _controller4 = TextEditingController();
+  bool isUploading = true;
 
   File? imageFile;
   final ImagePicker picker = ImagePicker();
 
   Future<void> pickImage() async {
+    setState(() {
+      isUploading = false;
+    });
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
       setState(() {
         imageFile = File(image.path);
+        // isUploading = true;
       });
       final snackbar = SnackBar(content: Text('Image Selected'));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    } else {
+      final snackbar = SnackBar(content: Text('No Image Selected'));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
-
-    imageFile == null
-        ? const Text("No Image Selected")
-        : Image.file(imageFile!, height: 150);
   }
 
   Future<void> createEvent() async {
     try {
       final uid = Uuid().v4();
       String imageUrl = await StorageService().uploadPoster(imageFile!, uid);
-      await FirebaseFirestore.instance.collection('events').doc(uid).set({
-        "eventId": uid,
-        "name": _controller1.text.trim(),
-        "description": _controller2.text.trim(),
-        "venue": _controller3.text.trim(),
-        "category": _controller4.text.trim(),
-        "imageUrl": imageUrl,
-      });
+      await FirestoreService().createEvent(
+        EventModel(
+          eventId: uid,
+          name: _controller1.text.trim(),
+          description: _controller2.text.trim(),
+          venue: _controller3.text.trim(),
+          category: _controller4.text.trim(),
+          imageUrl: imageUrl,
+        ),
+      );
       final snackbar = SnackBar(content: Text('Event Created'));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     } catch (e) {
@@ -122,7 +130,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     await createEvent();
                     Navigator.pop(context);
                   },
-                  child: Text('Create Event'),
+                  child: (isUploading)
+                      ? Text('Create Event')
+                      : Center(child: CircularProgressIndicator()),
                 ),
               ],
             ),

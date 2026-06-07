@@ -4,6 +4,7 @@ class EventModel {
   final String description;
   final String venue;
   final String category;
+  final String imageUrl;
 
   EventModel({
     required this.eventId,
@@ -11,6 +12,7 @@ class EventModel {
     required this.description,
     required this.venue,
     required this.category,
+    required this.imageUrl,
   });
 
   factory EventModel.fromMap(Map<String, dynamic> map) {
@@ -20,6 +22,7 @@ class EventModel {
       description: map["description"] ?? "",
       venue: map["venue"] ?? "",
       category: map["category"] ?? "",
+      imageUrl: map["imageUrl"] ?? "",
     );
   }
 
@@ -30,6 +33,7 @@ class EventModel {
       "description": description,
       "venue": venue,
       "category": category,
+      "imageUrl": imageUrl,
     };
   }
 }

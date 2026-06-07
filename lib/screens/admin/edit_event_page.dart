@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nexevent/models/event_model.dart';
 import 'package:nexevent/services/firestore_service.dart';
+import 'package:nexevent/services/storage_services.dart';
 
 class EditEventPage extends StatefulWidget {
   const EditEventPage({super.key, required this.docId});
@@ -17,6 +21,30 @@ class _EditEventPageState extends State<EditEventPage> {
   final TextEditingController _controller3 = TextEditingController();
   final TextEditingController _controller4 = TextEditingController();
   final TextEditingController _controller5 = TextEditingController();
+
+  bool isUploading = true;
+
+  File? imageFile;
+  final ImagePicker picker = ImagePicker();
+
+  Future<void> pickImage() async {
+    setState(() {
+      isUploading = false;
+    });
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        imageFile = File(image.path);
+        // isUploading = true;
+      });
+      final snackbar = SnackBar(content: Text('Image Selected'));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    } else {
+      final snackbar = SnackBar(content: Text('No Image Selected'));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +93,24 @@ class _EditEventPageState extends State<EditEventPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.grey),
+                    foregroundColor: WidgetStatePropertyAll(Colors.white),
+                  ),
+                  onPressed: pickImage,
+                  child: const Text("Choose Poster"),
+                ),
                 TextButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(Colors.black),
                     foregroundColor: WidgetStatePropertyAll(Colors.white),
                   ),
                   onPressed: () async {
+                    String imageUrl = await StorageService().uploadPoster(
+                      imageFile!,
+                      widget.docId,
+                    );
                     await FirestoreService().updateEvent(
                       EventModel(
                         eventId: widget.docId,
@@ -78,6 +118,7 @@ class _EditEventPageState extends State<EditEventPage> {
                         description: _controller2.text.trim(),
                         venue: _controller3.text.trim(),
                         category: _controller4.text.trim(),
+                        imageUrl: imageUrl, //this area needs to be updated
                       ),
                       widget.docId,
                     );
