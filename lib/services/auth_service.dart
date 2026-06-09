@@ -11,6 +11,7 @@ class AuthService {
     required String name,
     required String email,
     required String password,
+    required String role,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -23,7 +24,7 @@ class AuthService {
 
       "email": email,
 
-      "role": "student",
+      "role": role,
     });
   }
 

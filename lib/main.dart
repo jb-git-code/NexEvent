@@ -9,7 +9,7 @@ import 'package:nexevent/screens/auth/signup_screen.dart';
 import 'package:nexevent/services/notification_service.dart';
 
 void main() async {
-  await NotificationService().init();
+  // await NotificationService().init();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(MyApp());

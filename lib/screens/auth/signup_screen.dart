@@ -16,6 +16,7 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController _email = TextEditingController();
   TextEditingController _password = TextEditingController();
   TextEditingController _name = TextEditingController();
+  String role = "";
 
   Future<void> createAccount() async {
     try {
@@ -25,6 +26,7 @@ class _SignupScreenState extends State<SignupScreen> {
         name: _name.text.trim(),
         email: _email.text.trim(),
         password: _password.text.trim(),
+        role: role,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
       Navigator.pushAndRemoveUntil(
@@ -37,6 +39,10 @@ class _SignupScreenState extends State<SignupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(e_snackbar);
     }
   }
+
+  int? _value = 1;
+
+  List<String> roles = ['student', 'admin'];
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +82,29 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
+                Column(
+                  crossAxisAlignment: .start,
+                  mainAxisAlignment: .center,
+                  children: <Widget>[
+                    Text('Select your role'),
+                    const SizedBox(height: 10.0),
+                    Wrap(
+                      spacing: 5.0,
+                      children: List<Widget>.generate(2, (int index) {
+                        return ChoiceChip(
+                          label: Text(roles[index]),
+                          selected: _value == index,
+                          onSelected: (bool selected) {
+                            setState(() {
+                              _value = selected ? index : null;
+                              role = roles[index];
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
