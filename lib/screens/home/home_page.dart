@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadRole();
+    // print(role);
   }
 
   List<Widget> pages = [EventsPage(), MyEventsPage(), ProfilePage()];
@@ -41,61 +42,119 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
       appBar: AppBar(
-        title: (user != null) ? Text('${user.email}') : Text('Home Page'),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
-
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'NexEvent',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+                letterSpacing: -0.6,
+                color: Color(0xFF111827),
+              ),
+            ),
+            if (user != null && user.email != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Text(
+                  user.email!,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ),
+          ],
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
-          (role == 'admin')
-              ? IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreateEventPage(),
-                      ),
-                    );
-                  },
-                  icon: Icon(Icons.post_add_rounded),
-                )
-              : const SizedBox(),
-          IconButton(
-            onPressed: () async {
-              final authService = AuthService();
-              await authService.logout();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => loginScreen()),
-                (route) => false,
-              );
-            },
-
-            icon: Icon(Icons.logout),
+          if (role == 'admin')
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: primaryColor.withOpacity(0.08),
+                  foregroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateEventPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.post_add_rounded, size: 22),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0, right: 16.0),
+            child: IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.red.withOpacity(0.08),
+                foregroundColor: Colors.red[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(10),
+              ),
+              onPressed: () async {
+                final authService = AuthService();
+                await authService.logout();
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const loginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              },
+              icon: const Icon(Icons.logout_rounded, size: 22),
+            ),
           ),
         ],
       ),
       body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        // showElevation: true,
-        // selectedIndex: _currentIndex,
-        // onItemSelected: (index) {
-        //   setState(() => _currentIndex = index);
-        // },
+        elevation: 16,
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (value) => {
           setState(() {
             _selectedIndex = value;
           }),
         },
-        items: [
-          BottomNavigationBarItem(label: 'Events', icon: Icon(Icons.event)),
+        items: const [
           BottomNavigationBarItem(
-            label: 'My Events',
-            icon: Icon(Icons.event_note_outlined),
+            label: 'Explore',
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
           ),
-          BottomNavigationBarItem(label: 'Profile', icon: Icon(Icons.settings)),
+          BottomNavigationBarItem(
+            label: 'My Tickets',
+            icon: Icon(Icons.confirmation_number_outlined),
+            activeIcon: Icon(Icons.confirmation_number),
+          ),
+          BottomNavigationBarItem(
+            label: 'Profile',
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
+          ),
         ],
       ),
     );

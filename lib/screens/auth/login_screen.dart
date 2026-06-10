@@ -36,64 +36,126 @@ class _loginScreenState extends State<loginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Container(
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Login Screen', style: TextStyle(fontSize: 24)),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _email,
-                  decoration: InputDecoration(
-                    hintText: 'email',
-                    border: OutlineInputBorder(),
+                // Visual branding header
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.event_seat_rounded,
+                      size: 48,
+                      color: primaryColor,
+                    ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 24),
+                const Center(
+                  child: Text(
+                    'NexEvent',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.8,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    'Sign in to discover and manage events',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey[600],
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                
+                // Form Fields
+                TextField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your email',
+                    labelText: 'Email Address',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 TextField(
                   obscureText: true,
                   controller: _password,
-                  decoration: InputDecoration(
-                    hintText: 'password',
-                    border: OutlineInputBorder(),
+                  textInputAction: TextInputAction.done,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your password',
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock_outlined),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 32),
+                
+                // Submit Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    shadowColor: primaryColor.withOpacity(0.3),
+                    elevation: 4,
+                  ),
+                  onPressed: () async {
+                    await signIn();
+                  },
+                  child: const Text('Sign In'),
+                ),
+                const SizedBox(height: 24),
+                
+                // Toggle Auth Mode
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Don\'t have an account'),
+                    Text(
+                      "Don't have an account? ",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SignupScreen(),
+                            builder: (context) => const SignupScreen(),
                           ),
                         );
                       },
                       child: Text(
-                        'Signup',
-                        style: TextStyle(color: Colors.blue),
+                        'Sign Up',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
-                ),
-                SizedBox(height: 20),
-                TextButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.black),
-                    foregroundColor: WidgetStatePropertyAll(Colors.white),
-                  ),
-                  onPressed: () async {
-                    await signIn();
-                  },
-                  child: Text('Login'),
                 ),
               ],
             ),

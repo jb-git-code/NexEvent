@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nexevent/models/event_model.dart';
@@ -20,7 +19,6 @@ class _EditEventPageState extends State<EditEventPage> {
   final TextEditingController _controller2 = TextEditingController();
   final TextEditingController _controller3 = TextEditingController();
   final TextEditingController _controller4 = TextEditingController();
-  final TextEditingController _controller5 = TextEditingController();
 
   bool isUploading = true;
 
@@ -36,99 +34,175 @@ class _EditEventPageState extends State<EditEventPage> {
     if (image != null) {
       setState(() {
         imageFile = File(image.path);
-        // isUploading = true;
       });
-      final snackbar = SnackBar(content: Text('Image Selected'));
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      if (mounted) {
+        const snackbar = SnackBar(content: Text('Image Selected'));
+        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      }
     } else {
-      final snackbar = SnackBar(content: Text('No Image Selected'));
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      if (mounted) {
+        const snackbar = SnackBar(content: Text('No Image Selected'));
+        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Update Event'),
+        title: const Text('Update Event'),
         centerTitle: true,
-        backgroundColor: Colors.blue[200],
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsetsGeometry.all(16),
-        child: Container(
-          // color: Colors.pink[300],
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextField(
-                  controller: _controller1,
-                  decoration: InputDecoration(
-                    hintText: 'name',
-                    border: OutlineInputBorder(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Styled Image Picker Box
+              GestureDetector(
+                onTap: pickImage,
+                child: Container(
+                  width: double.infinity,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.withOpacity(0.12)),
                   ),
+                  child: imageFile != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.file(
+                            imageFile!,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 44,
+                              color: primaryColor,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Change Event Poster',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tap to select a new image',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
-                TextField(
-                  controller: _controller2,
-                  decoration: InputDecoration(
-                    hintText: 'description',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Event Name Input
+              TextField(
+                controller: _controller1,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  hintText: 'Enter event name',
+                  labelText: 'Event Name',
+                  prefixIcon: Icon(Icons.title_rounded),
                 ),
-                TextField(
-                  controller: _controller3,
-                  decoration: InputDecoration(
-                    hintText: 'venue',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Event Description Input
+              TextField(
+                controller: _controller2,
+                textInputAction: TextInputAction.next,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Enter event details and info',
+                  labelText: 'Description',
+                  prefixIcon: Icon(Icons.description_outlined),
+                  alignLabelWithHint: true,
                 ),
-                TextField(
-                  controller: _controller4,
-                  decoration: InputDecoration(
-                    hintText: 'category',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Venue Input
+              TextField(
+                controller: _controller3,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  hintText: 'Enter event location',
+                  labelText: 'Venue',
+                  prefixIcon: Icon(Icons.location_on_outlined),
                 ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.grey),
-                    foregroundColor: WidgetStatePropertyAll(Colors.white),
-                  ),
-                  onPressed: pickImage,
-                  child: const Text("Choose Poster"),
+              ),
+              const SizedBox(height: 16),
+              
+              // Category Input
+              TextField(
+                controller: _controller4,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. Music, Tech, Sports',
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category_outlined),
                 ),
-                TextButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.black),
-                    foregroundColor: WidgetStatePropertyAll(Colors.white),
-                  ),
-                  onPressed: () async {
-                    String imageUrl = await StorageService().uploadPoster(
-                      imageFile!,
-                      widget.docId,
-                    );
-                    await FirestoreService().updateEvent(
-                      EventModel(
-                        eventId: widget.docId,
-                        name: _controller1.text.trim(),
-                        description: _controller2.text.trim(),
-                        venue: _controller3.text.trim(),
-                        category: _controller4.text.trim(),
-                        imageUrl: imageUrl, //this area needs to be updated
-                      ),
-                      widget.docId,
-                    );
-                    final snackbar = SnackBar(content: Text('Event Updated'));
+              ),
+              const SizedBox(height: 32),
+              
+              // Submit Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shadowColor: primaryColor.withOpacity(0.3),
+                  elevation: 4,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: () async {
+                  String imageUrl = await StorageService().uploadPoster(
+                    imageFile!,
+                    widget.docId,
+                  );
+                  await FirestoreService().updateEvent(
+                    EventModel(
+                      eventId: widget.docId,
+                      name: _controller1.text.trim(),
+                      description: _controller2.text.trim(),
+                      venue: _controller3.text.trim(),
+                      category: _controller4.text.trim(),
+                      imageUrl: imageUrl,
+                    ),
+                    widget.docId,
+                  );
+                  if (context.mounted) {
+                    const snackbar = SnackBar(content: Text('Event Updated Successfully'));
                     ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                  },
-                  child: Text('update'),
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text(
+                  'Update Event',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
