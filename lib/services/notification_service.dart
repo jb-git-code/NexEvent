@@ -17,6 +17,22 @@ class NotificationService {
     });
   }
 
+  Future<void> showRegistrationSuccess(String eventName) async {
+    await notifications.show(
+      id: 1,
+      title: "Registration Successful 🎉",
+      body: "Registered for $eventName",
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'events_channel',
+          'Events',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
+  }
+
   void listenForegroundMessages() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       await notifications.show(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
+import 'package:nexevent/services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
 class EventDetailPage extends StatefulWidget {
@@ -58,7 +59,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -97,14 +98,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             ? Image.network(
                                 widget.imageUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  color: const Color(0xFFE5E7EB),
-                                  child: const Icon(
-                                    Icons.image_not_supported_outlined,
-                                    color: Colors.grey,
-                                    size: 48,
-                                  ),
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                      color: const Color(0xFFE5E7EB),
+                                      child: const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        color: Colors.grey,
+                                        size: 48,
+                                      ),
+                                    ),
                               )
                             : Container(
                                 color: primaryColor.withOpacity(0.08),
@@ -117,7 +119,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Event Title & Badge
                     Text(
                       widget.name,
@@ -130,7 +132,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(8),
@@ -147,7 +152,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     const SizedBox(height: 24),
                     const Divider(color: Color(0xFFF3F4F6), height: 1),
                     const SizedBox(height: 24),
-                    
+
                     // Venue Info Row
                     Row(
                       children: [
@@ -192,7 +197,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ],
                     ),
                     const SizedBox(height: 28),
-                    
+
                     // Description Section
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,10 +229,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 ),
               ),
             ),
-            
+
             // Bottom Action Bar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -257,7 +265,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => EditEventPage(docId: widget.did),
+                              builder: (context) =>
+                                  EditEventPage(docId: widget.did),
                             ),
                           );
                         },
@@ -294,7 +303,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             .where("userId", isEqualTo: useId)
                             .where("eventId", isEqualTo: widget.eventId)
                             .get();
-                        
+
                         if (query.docs.isEmpty) {
                           await FirestoreService().registerEvent(
                             RegistrationModel(
@@ -305,13 +314,20 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           );
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Registered Successfully!")),
+                              const SnackBar(
+                                content: Text("Registered Successfully!"),
+                              ),
                             );
                           }
+                          await NotificationService().showRegistrationSuccess(
+                            widget.name,
+                          );
                         } else {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Already Registered")),
+                              const SnackBar(
+                                content: Text("Already Registered"),
+                              ),
                             );
                           }
                         }
