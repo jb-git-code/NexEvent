@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         centerTitle: false,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 201, 236, 194),
         elevation: 0,
         actions: [
           if (role == 'admin')
