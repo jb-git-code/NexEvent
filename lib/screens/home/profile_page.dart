@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/services/firestore_service.dart';
+import 'package:nexevent/services/notification_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -10,6 +12,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  bool uploaded = false;
   final user = FirebaseAuth.instance.currentUser!;
   String role = "";
 
@@ -257,6 +260,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            (uploaded)
+                ? const SizedBox()
+                : ElevatedButton(
+                    onPressed: () async {
+                      String uid = FirebaseAuth.instance.currentUser!.uid;
+                      await NotificationService().getToken(uid);
+                      setState(() {
+                        uploaded = true;
+                      });
+                    },
+                    child: Text('Upload Token'),
+                  ),
           ],
         ),
       ),
