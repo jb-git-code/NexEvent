@@ -27,8 +27,6 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       role = doc["role"];
     });
-    print('success');
-    print(role);
   }
 
   @override
