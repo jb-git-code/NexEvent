@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/storage_services.dart';
@@ -17,8 +19,8 @@ class _EventsPageState extends State<EventsPage> {
     await FirestoreService().deleteEvent(eid);
   }
 
-  String role = "";
-
+  String role = "student";
+  bool isLoading = true;
   Future<void> loadRole() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -26,18 +28,19 @@ class _EventsPageState extends State<EventsPage> {
         .collection("users")
         .doc(uid)
         .get();
-
+    final map = doc.data() as Map<String, dynamic>;
     setState(() {
-      role = doc["role"];
+      isLoading = false;
+      role = map["role"];
+      print(map["role"]);
     });
-    print('success');
-    print(role);
   }
 
   @override
   void initState() {
     super.initState();
     loadRole();
+    // print(role);
   }
 
   @override
@@ -132,24 +135,15 @@ class _EventsPageState extends State<EventsPage> {
                               child:
                                   (data["imageUrl"] != null &&
                                       data["imageUrl"].toString().isNotEmpty)
-                                  ? Image.network(
-                                      data["imageUrl"],
-                                      width: 100,
-                                      height: 100,
+                                  ? CachedNetworkImage(
+                                      imageUrl: data["imageUrl"] ?? '',
                                       fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                          ) => Container(
-                                            color: const Color(0xFFE5E7EB),
-                                            child: Icon(
-                                              Icons
-                                                  .image_not_supported_outlined,
-                                              color: Colors.grey[400],
-                                            ),
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                            child: CircularProgressIndicator(),
                                           ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
                                     )
                                   : Container(
                                       color: primaryColor.withOpacity(0.08),
@@ -234,63 +228,69 @@ class _EventsPageState extends State<EventsPage> {
                           ),
 
                           // Right Section: Admin Actions
-                          if (role == 'admin')
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 12.0),
-                                child: IconButton(
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.red.withOpacity(
-                                      0.08,
-                                    ),
-                                    foregroundColor: Colors.red[700],
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    padding: const EdgeInsets.all(8),
-                                  ),
-                                  onPressed: () async {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) {
-                                        return AlertDialog(
-                                          title: const Text("Delete Event?"),
-                                          content: const Text(
-                                            "Are you sure you want to permanently delete this event? This action cannot be undone.",
+                          (role == 'admin')
+                              ? Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 12.0),
+                                    child: IconButton(
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: Colors.red.withOpacity(
+                                          0.08,
+                                        ),
+                                        foregroundColor: Colors.red[700],
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
                                           ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel'),
-                                            ),
-                                            TextButton(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor:
-                                                    Colors.red[700],
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                      ),
+                                      onPressed: () async {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return AlertDialog(
+                                              title: const Text(
+                                                "Delete Event?",
                                               ),
-                                              onPressed: () {
-                                                deleteEv(docs[index].id);
-                                                StorageService().deletePoster(
-                                                  docs[index].id,
-                                                );
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Delete'),
-                                            ),
-                                          ],
+                                              content: const Text(
+                                                "Are you sure you want to permanently delete this event? This action cannot be undone.",
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                TextButton(
+                                                  style: TextButton.styleFrom(
+                                                    foregroundColor:
+                                                        Colors.red[700],
+                                                  ),
+                                                  onPressed: () {
+                                                    deleteEv(docs[index].id);
+                                                    StorageService()
+                                                        .deletePoster(
+                                                          docs[index].id,
+                                                        );
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('Delete'),
+                                                ),
+                                              ],
+                                            );
+                                          },
                                         );
                                       },
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 20,
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        size: 20,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
+                                )
+                              : const SizedBox(),
                         ],
                       ),
                     ),

@@ -260,19 +260,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            (uploaded)
-                ? const SizedBox()
-                : ElevatedButton(
-                    onPressed: () async {
-                      String uid = FirebaseAuth.instance.currentUser!.uid;
-                      await NotificationService().getToken(uid);
-                      setState(() {
-                        uploaded = true;
-                      });
-                    },
-                    child: Text('Upload Token'),
-                  ),
+            // const SizedBox(height: 20),
+            // (uploaded)
+            //     ? const SizedBox()
+            //     : ElevatedButton(
+            //         onPressed: () async {
+            //           String uid = FirebaseAuth.instance.currentUser!.uid;
+            //           await NotificationService().getToken(uid);
+            //           setState(() {
+            //             uploaded = true;
+            //           });
+            //         },
+            //         child: Text('Upload Token'),
+            //       ),
           ],
         ),
       ),

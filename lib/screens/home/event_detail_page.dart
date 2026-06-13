@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/models/registration_model.dart';
+import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/notification_service.dart';
@@ -35,8 +37,8 @@ class EventDetailPage extends StatefulWidget {
 }
 
 class _EventDetailPageState extends State<EventDetailPage> {
-  String role = "";
-
+  String role = "student";
+  bool isLoading = true;
   Future<void> loadRole() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -44,9 +46,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
         .collection("users")
         .doc(uid)
         .get();
-
+    final map = doc.data() as Map<String, dynamic>;
     setState(() {
-      role = doc["role"];
+      role = map["role"];
+      print(map["role"]);
     });
   }
 
@@ -54,6 +57,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
   void initState() {
     super.initState();
     loadRole();
+    setState(() {
+      isLoading = false;
+    });
+    // print(role);
   }
 
   @override
@@ -95,18 +102,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ],
                         ),
                         child: (widget.imageUrl.isNotEmpty)
-                            ? Image.network(
-                                widget.imageUrl,
+                            ? CachedNetworkImage(
+                                imageUrl: widget.imageUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      color: const Color(0xFFE5E7EB),
-                                      child: const Icon(
-                                        Icons.image_not_supported_outlined,
-                                        color: Colors.grey,
-                                        size: 48,
-                                      ),
-                                    ),
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
                               )
                             : Container(
                                 color: primaryColor.withOpacity(0.08),

@@ -20,14 +20,10 @@ class _MyEventsPageState extends State<MyEventsPage> {
         stream: FirestoreService().getUserRegistrations(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           final docs = snapshot.data!.docs;
 
@@ -53,10 +49,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                   const SizedBox(height: 4),
                   Text(
                     'Explore events and get tickets now!',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[400],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[400]),
                   ),
                 ],
               ),
@@ -70,14 +63,15 @@ class _MyEventsPageState extends State<MyEventsPage> {
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
               final eid = data["eventId"];
-              
+
               return FutureBuilder<DocumentSnapshot>(
                 future: FirebaseFirestore.instance
                     .collection('events')
                     .doc(eid)
                     .get(),
                 builder: (context, eventSnapshot) {
-                  if (eventSnapshot.connectionState == ConnectionState.waiting) {
+                  if (eventSnapshot.connectionState ==
+                      ConnectionState.waiting) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(child: CircularProgressIndicator()),
@@ -153,6 +147,8 @@ class _MyEventsPageState extends State<MyEventsPage> {
                                               );
                                           if (context.mounted) {
                                             Navigator.pop(context);
+                                          } else {
+                                            CircularProgressIndicator();
                                           }
                                         },
                                         child: const Text('Cancel Ticket'),

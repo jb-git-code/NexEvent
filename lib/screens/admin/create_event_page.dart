@@ -18,15 +18,19 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _controller2 = TextEditingController();
   final TextEditingController _controller3 = TextEditingController();
   final TextEditingController _controller4 = TextEditingController();
-  bool isUploading = false;
+  // bool isUploading = false;
+
+  final uid = const Uuid().v4();
 
   File? imageFile;
   final ImagePicker picker = ImagePicker();
 
+  String img = "";
+
   Future<void> pickImage() async {
-    setState(() {
-      isUploading = true;
-    });
+    // setState(() {
+    //   isUploading = true;
+    // });
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
@@ -43,12 +47,14 @@ class _CreateEventPageState extends State<CreateEventPage> {
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     }
+    String imageUrl = await StorageService().uploadPoster(imageFile!, uid);
+    setState(() {
+      img = imageUrl;
+    });
   }
 
   Future<void> createEvent() async {
     try {
-      final uid = const Uuid().v4();
-      String imageUrl = await StorageService().uploadPoster(imageFile!, uid);
       await FirestoreService().createEvent(
         EventModel(
           eventId: uid,
@@ -56,7 +62,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
           description: _controller2.text.trim(),
           venue: _controller3.text.trim(),
           category: _controller4.text.trim(),
-          imageUrl: imageUrl,
+          imageUrl: img,
         ),
       );
       if (context.mounted) {
@@ -202,22 +208,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     Navigator.pop(context);
                   }
                 },
-                child: (isUploading)
-                    ? const Text(
-                        'Create Event',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      )
-                    : const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      ),
+                child: const Text(
+                  'Create Event',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
             ],
           ),

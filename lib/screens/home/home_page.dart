@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/home/events_page.dart';
@@ -16,7 +17,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String role = "";
+  String role = "student";
+  bool isLoading = true;
   Future<void> loadRole() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -24,9 +26,10 @@ class _HomePageState extends State<HomePage> {
         .collection("users")
         .doc(uid)
         .get();
-
+    final map = doc.data() as Map<String, dynamic>;
     setState(() {
-      role = doc["role"];
+      role = map["role"];
+      print(map["role"]);
     });
   }
 
@@ -34,6 +37,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadRole();
+    setState(() {
+      isLoading = false;
+    });
     // print(role);
   }
 
@@ -77,29 +83,32 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: const Color.fromARGB(255, 201, 236, 194),
         elevation: 0,
         actions: [
-          if (role == 'admin')
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: primaryColor.withOpacity(0.08),
-                  foregroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.all(10),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CreateEventPage(),
+          (isLoading)
+              ? const CircularProgressIndicator()
+              : (role == 'admin')
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: IconButton(
+                    style: IconButton.styleFrom(
+                      backgroundColor: primaryColor.withOpacity(0.08),
+                      foregroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(10),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.post_add_rounded, size: 22),
-              ),
-            ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateEventPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.post_add_rounded, size: 22),
+                  ),
+                )
+              : const SizedBox(),
           Padding(
             padding: const EdgeInsets.only(left: 4.0, right: 16.0),
             child: IconButton(
