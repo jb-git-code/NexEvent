@@ -8,6 +8,7 @@ import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/storage_services.dart';
+import 'package:share_plus/share_plus.dart';
 
 class EventsPage extends ConsumerStatefulWidget {
   const EventsPage({super.key});
@@ -232,7 +233,27 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                               ),
                             ),
                           ),
+                          // Padding(
+                          //   padding: const EdgeInsets.all(8.0),
+                          //   child: IconButton(
+                          //     onPressed: () {
+                          //       SharePlus.instance.share(
+                          //         ShareParams(
+                          //           text:
+                          //               '''🎉 ${data["name"] ?? ''}
 
+                          //             📍 Venue: ${data["venue"] ?? ''}
+
+                          //             📝 ${data["description"] ?? ''}
+
+                          //           ''',
+                          //         ),
+                          //       );
+                          //     },
+
+                          //     icon: const Icon(Icons.share),
+                          //   ),
+                          // ),
                           // Right Section: Admin Actions
                           (role == 'admin')
                               ? Center(

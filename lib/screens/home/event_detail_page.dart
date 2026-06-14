@@ -7,6 +7,7 @@ import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/notification_service.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
 class EventDetailPage extends StatefulWidget {
@@ -231,6 +232,37 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ],
                 ),
               ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(
+                  'Share this event with friends',
+                  style: TextStyle(fontSize: 20),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: IconButton(
+                    onPressed: () {
+                      print('shared');
+                      SharePlus.instance.share(
+                        ShareParams(
+                          text:
+                              '''🎉 ${widget.name}
+
+                                      📍 Venue: ${widget.venue}
+
+                                      📝 ${widget.description}
+
+                                    ''',
+                        ),
+                      );
+                    },
+
+                    icon: const Icon(Icons.share),
+                  ),
+                ),
+              ],
             ),
 
             // Bottom Action Bar
