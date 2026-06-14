@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
+import 'package:nexevent/screens/home/saved_events.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/widgets/events_card.dart';
 
@@ -159,6 +161,31 @@ class _MyEventsPageState extends State<MyEventsPage> {
                               );
                             },
                             icon: const Icon(Icons.cancel_outlined, size: 22),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: IconButton(
+                              iconSize: 32,
+                              onPressed: () async {
+                                try {
+                                  final uss =
+                                      FirebaseAuth.instance.currentUser!.uid;
+                                  await FirestoreService().saveEvent(
+                                    uss,
+                                    dd["eventId"] ?? '',
+                                  );
+                                  final sb = SnackBar(
+                                    content: Text('Event Saved'),
+                                  );
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(sb);
+                                } on FirebaseException catch (e) {
+                                  print(e);
+                                }
+                              },
+                              icon: Icon(Icons.save_as),
+                            ),
                           ),
                         ],
                       ),

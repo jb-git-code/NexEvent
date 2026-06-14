@@ -2,50 +2,56 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
+import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/storage_services.dart';
 
-class EventsPage extends StatefulWidget {
+class EventsPage extends ConsumerStatefulWidget {
   const EventsPage({super.key});
 
   @override
-  State<EventsPage> createState() => _EventsPageState();
+  ConsumerState<EventsPage> createState() => _EventsPageState();
 }
 
-class _EventsPageState extends State<EventsPage> {
+class _EventsPageState extends ConsumerState<EventsPage> {
   Future<void> deleteEv(String eid) async {
     await FirestoreService().deleteEvent(eid);
   }
 
-  String role = "student";
-  bool isLoading = true;
-  Future<void> loadRole() async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
+  // String role = "student";
+  // bool isLoading = true;
+  // Future<void> loadRole() async {
+  //   String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    final doc = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(uid)
-        .get();
-    final map = doc.data() as Map<String, dynamic>;
-    setState(() {
-      isLoading = false;
-      role = map["role"];
-      print(map["role"]);
-    });
-  }
+  //   final doc = await FirebaseFirestore.instance
+  //       .collection("users")
+  //       .doc(uid)
+  //       .get();
+  //   final map = doc.data() as Map<String, dynamic>;
+  //   setState(() {
+  //     isLoading = false;
+  //     role = map["role"];
+  //     print(map["role"]);
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    loadRole();
+    // loadRole();
     // print(role);
   }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
+
+    final currUser = ref.watch(currentUserProvider);
+
+    final role = currUser!.role;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),

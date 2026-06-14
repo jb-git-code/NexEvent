@@ -43,12 +43,16 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getUserRegistrations() {
-  return FirebaseFirestore.instance
-      .collection("registrations")
-      .where(
-        "userId",
-        isEqualTo: FirebaseAuth.instance.currentUser!.uid,
-      )
-      .snapshots();
-}
+    return FirebaseFirestore.instance
+        .collection("registrations")
+        .where("userId", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .snapshots();
+  }
+
+  Future<void> saveEvent(String usedId, String eventId) async {
+    await FirebaseFirestore.instance
+        .collection('saved_events')
+        .doc(eventId)
+        .set({"usedId": usedId, "eventId": eventId});
+  }
 }
