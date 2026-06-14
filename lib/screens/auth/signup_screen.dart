@@ -16,28 +16,34 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController _password = TextEditingController();
   TextEditingController _name = TextEditingController();
   String role = "";
+  bool isLoading = false;
 
   Future<void> createAccount() async {
     try {
-      final snackbar = SnackBar(content: Text('Account Created'));
       final authService = AuthService();
-      authService.signUp(
+      await authService.signUp(
         name: _name.text.trim(),
         email: _email.text.trim(),
         password: _password.text.trim(),
         role: role,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-        (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       final e_snackbar = SnackBar(content: Text(e.toString()));
       ScaffoldMessenger.of(context).showSnackBar(e_snackbar);
     }
   }
+
+  // Future<void> handleButtonPress() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+
+  //   await Future.delayed(const Duration(seconds: 3));
+
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
 
   int? _value = 1;
 
@@ -53,7 +59,10 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Center(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32.0,
+              vertical: 24.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -98,7 +107,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Form Fields
                 TextField(
                   controller: _name,
@@ -133,7 +142,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Role Selection
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -161,7 +170,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             label: Text(
                               roles[index].toUpperCase(),
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey[700],
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey[700],
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -171,7 +182,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             backgroundColor: Colors.white,
                             checkmarkColor: Colors.white,
                             side: BorderSide(
-                              color: isSelected ? primaryColor : Colors.grey[300]!,
+                              color: isSelected
+                                  ? primaryColor
+                                  : Colors.grey[300]!,
                               width: 1,
                             ),
                             shape: RoundedRectangleBorder(
@@ -190,7 +203,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Submit Button
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -200,12 +213,46 @@ class _SignupScreenState extends State<SignupScreen> {
                     elevation: 4,
                   ),
                   onPressed: () async {
-                    await createAccount();
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    try {
+                      await createAccount();
+
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Account Created")),
+                      );
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+
+                        MaterialPageRoute(builder: (_) => const HomePage()),
+
+                        (route) => false,
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(e.toString())));
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
+                    }
                   },
-                  child: const Text('Sign Up'),
+                  child: isLoading
+                      ? CircularProgressIndicator()
+                      : const Text('Sign Up'),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Toggle Auth Mode
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

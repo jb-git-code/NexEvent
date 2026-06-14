@@ -15,7 +15,7 @@ class _loginScreenState extends State<loginScreen> {
   Future<void> signIn() async {
     try {
       final authService = AuthService();
-      authService.login(
+      await authService.login(
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
@@ -37,14 +37,17 @@ class _loginScreenState extends State<loginScreen> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32.0,
+              vertical: 24.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,7 +92,7 @@ class _loginScreenState extends State<loginScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                
+
                 // Form Fields
                 TextField(
                   controller: _email,
@@ -113,7 +116,7 @@ class _loginScreenState extends State<loginScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Submit Button
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -128,7 +131,7 @@ class _loginScreenState extends State<loginScreen> {
                   child: const Text('Sign In'),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Toggle Auth Mode
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

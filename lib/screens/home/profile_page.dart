@@ -1,46 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/notification_service.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   bool uploaded = false;
-  final user = FirebaseAuth.instance.currentUser!;
-  String role = "";
-
-  Future<void> loadRole() async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
-
-    final doc = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(uid)
-        .get();
-
-    setState(() {
-      role = doc["role"];
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    loadRole();
   }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
-    final userEmail = user.email ?? 'No Email';
+    final currUser = ref.watch(currentUserProvider);
+    final userEmail = currUser!.email ?? 'No Email';
+    final role = currUser.role;
     final initial = userEmail.isNotEmpty ? userEmail[0].toUpperCase() : 'U';
+    print('User => $userEmail');
+    print('Role => $role');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -193,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                user.uid,
+                                currUser.uid,
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,

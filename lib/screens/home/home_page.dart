@@ -1,55 +1,81 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
+import 'package:nexevent/providers/auth_state_provider.dart';
+import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
 import 'package:nexevent/services/auth_service.dart';
+import 'package:nexevent/services/firestore_service.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  String role = "student";
+class _HomePageState extends ConsumerState<HomePage> {
   bool isLoading = true;
-  Future<void> loadRole() async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
+  Future<void> loadUser() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    if (firebaseUser == null) {
+      return;
+    }
+
+    final uid = firebaseUser.uid;
 
     final doc = await FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
         .get();
-    final map = doc.data() as Map<String, dynamic>;
-    setState(() {
-      role = map["role"];
-      print(map["role"]);
-    });
+
+    if (!doc.exists || doc.data() == null) {
+      return;
+    }
+
+    final user = UserModel.fromMap(doc.data()!);
+
+    ref.read(currentUserProvider.notifier).setUser(user);
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    loadRole();
-    setState(() {
-      isLoading = false;
-    });
-    // print(role);
+    print('homepage');
+    loadUser();
   }
 
   List<Widget> pages = [EventsPage(), MyEventsPage(), ProfilePage()];
   int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final primaryColor = Theme.of(context).primaryColor;
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
+    final currUser = ref.watch(currentUserProvider);
+
+    if (currUser == null) {
+      return const Scaffold(body: Center(child: Text("User not found")));
+    }
+
+    final role = currUser.role;
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -85,7 +111,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           (isLoading)
               ? const CircularProgressIndicator()
-              : (role == 'admin')
+              : (role != 'student')
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: IconButton(
@@ -123,6 +149,8 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 final authService = AuthService();
                 await authService.logout();
+                await FirebaseAuth.instance.signOut();
+                ref.read(currentUserProvider.notifier).clearUser();
                 if (context.mounted) {
                   Navigator.pushAndRemoveUntil(
                     context,
