@@ -105,7 +105,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.withOpacity(0.12)),
+                    border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
                   ),
                   child: imageFile != null
                       ? ClipRRect(
@@ -198,7 +198,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  shadowColor: primaryColor.withOpacity(0.3),
+                  shadowColor: primaryColor.withValues(alpha: 0.3),
                   elevation: 4,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

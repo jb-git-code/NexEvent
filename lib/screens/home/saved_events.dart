@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nexevent/screens/home/home_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
 class SavedEvents extends StatefulWidget {

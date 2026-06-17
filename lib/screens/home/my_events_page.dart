@@ -115,7 +115,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                           const SizedBox(width: 8),
                           IconButton(
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.red.withOpacity(0.08),
+                              backgroundColor: Colors.red.withValues(alpha: 0.08),
                               foregroundColor: Colors.red[700],
                               padding: const EdgeInsets.all(12),
                               shape: RoundedRectangleBorder(

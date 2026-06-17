@@ -44,6 +44,8 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_riverpod: ^2.6.1
   share_plus: ^13.1.0
+  app_links: ^7.1.2
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

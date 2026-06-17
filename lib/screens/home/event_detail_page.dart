@@ -96,7 +96,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           color: const Color(0xFFF3F4F6),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: Colors.black.withValues(alpha: 0.03),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -113,7 +113,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                     const Icon(Icons.error),
                               )
                             : Container(
-                                color: primaryColor.withOpacity(0.08),
+                                color: primaryColor.withValues(alpha: 0.08),
                                 child: Icon(
                                   Icons.event_rounded,
                                   color: primaryColor,
@@ -163,7 +163,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.08),
+                            color: primaryColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -233,37 +233,39 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(
-                  'Share this event with friends',
-                  style: TextStyle(fontSize: 20),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: IconButton(
-                    onPressed: () {
-                      print('shared');
-                      SharePlus.instance.share(
-                        ShareParams(
-                          text:
-                              '''🎉 ${widget.name}
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
+            //     Text(
+            //       'Share this event with friends',
+            //       style: TextStyle(fontSize: 20),
+            //     ),
+            //     Padding(
+            //       padding: const EdgeInsets.all(8.0),
+            //       child: IconButton(
+            //         onPressed: () {
+            //           print('shared');
+            //           SharePlus.instance.share(
+            //             ShareParams(
+            //               text:
+            //                   '''🎉 ${widget.name}
 
-                                      📍 Venue: ${widget.venue}
+            //                           📍 Venue: ${widget.venue}
 
-                                      📝 ${widget.description}
+            //                           📝 ${widget.description}
 
-                                    ''',
-                        ),
-                      );
-                    },
+            //                           🔗 Open in NexEvent:nexevent://event/${widget.eventId}
 
-                    icon: const Icon(Icons.share),
-                  ),
-                ),
-              ],
-            ),
+            //                         ''',
+            //             ),
+            //           );
+            //         },
+
+            //         icon: const Icon(Icons.share),
+            //       ),
+            //     ),
+            //   ],
+            // ),
 
             // Bottom Action Bar
             Container(
@@ -275,7 +277,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 10,
                     offset: const Offset(0, -4),
                   ),
@@ -322,7 +324,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
-                        shadowColor: primaryColor.withOpacity(0.3),
+                        shadowColor: primaryColor.withValues(alpha: 0.3),
                         elevation: 4,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -345,6 +347,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                               registrationId: regId,
                               eventId: widget.eventId,
                               userId: useId,
+                              attented: false,
                             ),
                           );
                           if (context.mounted) {

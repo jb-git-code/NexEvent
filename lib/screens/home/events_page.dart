@@ -153,7 +153,7 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                                           const Icon(Icons.error),
                                     )
                                   : Container(
-                                      color: primaryColor.withOpacity(0.08),
+                                      color: primaryColor.withValues(alpha: 0.08),
                                       child: Icon(
                                         Icons.event_note_rounded,
                                         color: primaryColor,
@@ -213,7 +213,7 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                                         vertical: 3,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: primaryColor.withOpacity(0.08),
+                                        color: primaryColor.withValues(alpha: 0.08),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -261,8 +261,8 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                                     padding: const EdgeInsets.only(right: 12.0),
                                     child: IconButton(
                                       style: IconButton.styleFrom(
-                                        backgroundColor: Colors.red.withOpacity(
-                                          0.08,
+                                        backgroundColor: Colors.red.withValues(
+                                          alpha: 0.08,
                                         ),
                                         foregroundColor: Colors.red[700],
                                         shape: RoundedRectangleBorder(

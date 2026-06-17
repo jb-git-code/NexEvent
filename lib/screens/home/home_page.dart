@@ -11,6 +11,7 @@ import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
 import 'package:nexevent/screens/home/saved_events.dart';
+import 'package:nexevent/screens/user_registrations.dart';
 import 'package:nexevent/services/auth_service.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
@@ -114,7 +115,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SavedEvents()),
+                MaterialPageRoute(builder: (context) => UserRegistrations()),
               );
             },
             icon: Icon(Icons.event_available_rounded),
@@ -126,7 +127,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: IconButton(
                     style: IconButton.styleFrom(
-                      backgroundColor: primaryColor.withOpacity(0.08),
+                      backgroundColor: primaryColor.withValues(alpha: 0.08),
                       foregroundColor: primaryColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -149,7 +150,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             padding: const EdgeInsets.only(left: 4.0, right: 16.0),
             child: IconButton(
               style: IconButton.styleFrom(
-                backgroundColor: Colors.red.withOpacity(0.08),
+                backgroundColor: Colors.red.withValues(alpha: 0.08),
                 foregroundColor: Colors.red[700],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
