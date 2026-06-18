@@ -7,11 +7,12 @@ import 'package:nexevent/providers/auth_state_provider.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
+import 'package:nexevent/screens/auth/scanner_page.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
 import 'package:nexevent/screens/home/saved_events.dart';
-import 'package:nexevent/screens/user_registrations.dart';
+import 'package:nexevent/screens/home/user_registrations.dart';
 import 'package:nexevent/services/auth_service.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
@@ -111,15 +112,33 @@ class _HomePageState extends ConsumerState<HomePage> {
         backgroundColor: const Color.fromARGB(255, 201, 236, 194),
         elevation: 0,
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => UserRegistrations()),
-              );
-            },
-            icon: Icon(Icons.event_available_rounded),
-          ),
+          (isLoading)
+              ? const CircularProgressIndicator()
+              : (role != 'student')
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: IconButton(
+                    style: IconButton.styleFrom(
+                      backgroundColor: primaryColor.withValues(alpha: 0.08),
+                      foregroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+
+                        MaterialPageRoute(
+                          builder: (_) => const QRScannerPage(),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.qr_code_rounded),
+                  ),
+                )
+              : const SizedBox(),
           (isLoading)
               ? const CircularProgressIndicator()
               : (role != 'student')

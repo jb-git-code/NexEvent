@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/screens/home/saved_events.dart';
+import 'package:nexevent/screens/home/user_registrations.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/widgets/events_card.dart';
 
@@ -92,14 +93,8 @@ class _MyEventsPageState extends State<MyEventsPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EventDetailPage(
-                              name: dd["name"] ?? '',
-                              eventId: dd["eventId"] ?? '',
-                              venue: dd["venue"] ?? '',
-                              description: dd["description"] ?? '',
-                              did: dd["eventId"] ?? '',
-                              imageUrl: dd["imageUrl"] ?? '',
-                            ),
+                            builder: (context) =>
+                                UserRegistrations(evId: dd["eventId"] ?? ''),
                           ),
                         );
                       },
@@ -115,7 +110,9 @@ class _MyEventsPageState extends State<MyEventsPage> {
                           const SizedBox(width: 8),
                           IconButton(
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.red.withValues(alpha: 0.08),
+                              backgroundColor: Colors.red.withValues(
+                                alpha: 0.08,
+                              ),
                               foregroundColor: Colors.red[700],
                               padding: const EdgeInsets.all(12),
                               shape: RoundedRectangleBorder(
@@ -166,25 +163,34 @@ class _MyEventsPageState extends State<MyEventsPage> {
                             padding: const EdgeInsets.all(8.0),
                             child: IconButton(
                               iconSize: 32,
-                              onPressed: () async {
-                                try {
-                                  final uss =
-                                      FirebaseAuth.instance.currentUser!.uid;
-                                  await FirestoreService().saveEvent(
-                                    uss,
-                                    dd["eventId"] ?? '',
-                                  );
-                                  final sb = SnackBar(
-                                    content: Text('Event Saved'),
-                                  );
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(sb);
-                                } on FirebaseException catch (e) {
-                                  print(e);
-                                }
+                              // onPressed: () async {
+                              //   try {
+                              //     final uss =
+                              //         FirebaseAuth.instance.currentUser!.uid;
+                              //     await FirestoreService().saveEvent(
+                              //       uss,
+                              //       dd["eventId"] ?? '',
+                              //     );
+                              //     final sb = SnackBar(
+                              //       content: Text('Event Saved'),
+                              //     );
+                              //     ScaffoldMessenger.of(
+                              //       context,
+                              //     ).showSnackBar(sb);
+                              //   } on FirebaseException catch (e) {
+                              //     print(e);
+                              //   }
+                              // },
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        UserRegistrations(evId: eid),
+                                  ),
+                                );
                               },
-                              icon: Icon(Icons.save_as),
+                              icon: Icon(Icons.qr_code),
                             ),
                           ),
                         ],
