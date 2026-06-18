@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/providers/user_provider.dart';
+import 'package:nexevent/screens/auth/login_screen.dart';
+import 'package:nexevent/services/auth_service.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/notification_service.dart';
 
@@ -244,23 +246,53 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ],
                     ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Divider(color: Color(0xFFF3F4F6), height: 1),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.logout,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        TextButton(
+                          onPressed: () async {
+                            final authService = AuthService();
+                            await authService.logout();
+                            await FirebaseAuth.instance.signOut();
+                            ref.read(currentUserProvider.notifier).clearUser();
+                            if (context.mounted) {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const loginScreen(),
+                                ),
+                                (route) => false,
+                              );
+                            }
+                          },
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
-            // const SizedBox(height: 20),
-            // (uploaded)
-            //     ? const SizedBox()
-            //     : ElevatedButton(
-            //         onPressed: () async {
-            //           String uid = FirebaseAuth.instance.currentUser!.uid;
-            //           await NotificationService().getToken(uid);
-            //           setState(() {
-            //             uploaded = true;
-            //           });
-            //         },
-            //         child: Text('Upload Token'),
-            //       ),
           ],
         ),
       ),

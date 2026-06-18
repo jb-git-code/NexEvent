@@ -165,35 +165,35 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 )
               : const SizedBox(),
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0, right: 16.0),
-            child: IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.red.withValues(alpha: 0.08),
-                foregroundColor: Colors.red[700],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(10),
-              ),
-              onPressed: () async {
-                final authService = AuthService();
-                await authService.logout();
-                await FirebaseAuth.instance.signOut();
-                ref.read(currentUserProvider.notifier).clearUser();
-                if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const loginScreen(),
-                    ),
-                    (route) => false,
-                  );
-                }
-              },
-              icon: const Icon(Icons.logout_rounded, size: 22),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 4.0, right: 16.0),
+          //   child: IconButton(
+          //     style: IconButton.styleFrom(
+          //       backgroundColor: Colors.red.withValues(alpha: 0.08),
+          //       foregroundColor: Colors.red[700],
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //       ),
+          //       padding: const EdgeInsets.all(10),
+          //     ),
+          //     onPressed: () async {
+          //       final authService = AuthService();
+          //       await authService.logout();
+          //       await FirebaseAuth.instance.signOut();
+          //       ref.read(currentUserProvider.notifier).clearUser();
+          //       if (context.mounted) {
+          //         Navigator.pushAndRemoveUntil(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (context) => const loginScreen(),
+          //           ),
+          //           (route) => false,
+          //         );
+          //       }
+          //     },
+          //     icon: const Icon(Icons.logout_rounded, size: 22),
+          //   ),
+          // ),
         ],
       ),
       body: pages[_selectedIndex],
