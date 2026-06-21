@@ -20,12 +20,12 @@ class _QRScannerPageState extends State<QRScannerPage> {
         .get();
 
     if (!doc.exists) {
-      print("Invalid QR");
-
       return;
     }
 
-    print("Valid QR");
+    if (doc["attended"] == true) {
+      return;
+    }
   }
 
   Future<void> markAttendance(String id) async {
@@ -51,15 +51,25 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
           final code = barcode.rawValue;
 
-          if (code == null) return;
+          if (code == null) {
+            Navigator.pop(context);
+          }
 
-          markAttendance(code);
+          markAttendance(code!);
+
+          showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                title: const Text("Success"),
+                content: const Text("Attendance Marked"),
+              );
+            },
+          );
 
           scanned = true;
 
           // print("QR => $code");
-
-          print('scanned');
         },
       ),
     );

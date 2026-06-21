@@ -24,6 +24,7 @@ class _EditEventPageState extends State<EditEventPage> {
 
   File? imageFile;
   final ImagePicker picker = ImagePicker();
+  String img = '';
 
   Future<void> pickImage() async {
     setState(() {
@@ -35,6 +36,7 @@ class _EditEventPageState extends State<EditEventPage> {
       setState(() {
         imageFile = File(image.path);
       });
+
       if (mounted) {
         const snackbar = SnackBar(content: Text('Image Selected'));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
@@ -45,6 +47,13 @@ class _EditEventPageState extends State<EditEventPage> {
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     }
+    String imageUrl = await StorageService().uploadPoster(
+      imageFile!,
+      widget.docId,
+    );
+    setState(() {
+      img = imageUrl;
+    });
   }
 
   @override
@@ -75,15 +84,14 @@ class _EditEventPageState extends State<EditEventPage> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.12),
+                    ),
                   ),
                   child: imageFile != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: Image.file(
-                            imageFile!,
-                            fit: BoxFit.cover,
-                          ),
+                          child: Image.file(imageFile!, fit: BoxFit.cover),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -115,7 +123,7 @@ class _EditEventPageState extends State<EditEventPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Event Name Input
               TextField(
                 controller: _controller1,
@@ -127,7 +135,7 @@ class _EditEventPageState extends State<EditEventPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Event Description Input
               TextField(
                 controller: _controller2,
@@ -141,7 +149,7 @@ class _EditEventPageState extends State<EditEventPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Venue Input
               TextField(
                 controller: _controller3,
@@ -153,7 +161,7 @@ class _EditEventPageState extends State<EditEventPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Category Input
               TextField(
                 controller: _controller4,
@@ -165,7 +173,7 @@ class _EditEventPageState extends State<EditEventPage> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Submit Button
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -176,10 +184,6 @@ class _EditEventPageState extends State<EditEventPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () async {
-                  String imageUrl = await StorageService().uploadPoster(
-                    imageFile!,
-                    widget.docId,
-                  );
                   await FirestoreService().updateEvent(
                     EventModel(
                       eventId: widget.docId,
@@ -187,12 +191,14 @@ class _EditEventPageState extends State<EditEventPage> {
                       description: _controller2.text.trim(),
                       venue: _controller3.text.trim(),
                       category: _controller4.text.trim(),
-                      imageUrl: imageUrl,
+                      imageUrl: img,
                     ),
                     widget.docId,
                   );
                   if (context.mounted) {
-                    const snackbar = SnackBar(content: Text('Event Updated Successfully'));
+                    const snackbar = SnackBar(
+                      content: Text('Event Updated Successfully'),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(snackbar);
                     Navigator.pop(context);
                   }
