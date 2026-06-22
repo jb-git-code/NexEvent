@@ -1,17 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
-class AllAnnouncements extends StatefulWidget {
+class AllAnnouncements extends ConsumerStatefulWidget {
   const AllAnnouncements({super.key});
 
   @override
-  State<AllAnnouncements> createState() => _AllAnnouncementsState();
+  ConsumerState<AllAnnouncements> createState() => _AllAnnouncementsState();
 }
 
-class _AllAnnouncementsState extends State<AllAnnouncements> {
+class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
     return Scaffold(
       body: StreamBuilder(
         stream: FirestoreService().getEvents('announcements'),
@@ -59,9 +62,27 @@ class _AllAnnouncementsState extends State<AllAnnouncements> {
             itemCount: allDocs.length,
             itemBuilder: ((context, index) {
               final doc = allDocs[index].data() as Map<String, dynamic>;
-              return ListTile(
-                title: Text(doc["title"]),
-                subtitle: Text(doc["content"]),
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(children: [Text(doc["title"]), Text(doc["content"])]),
+                  (user!.role == 'admin')
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: IconButton(
+                            onPressed: () {
+                              FirestoreService().deleteAnnouncemnt(doc["id"]);
+                              final sb = SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                content: Text('Announcement Created'),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(sb);
+                            },
+                            icon: Icon(color: Colors.red, Icons.delete_forever),
+                          ),
+                        )
+                      : const SizedBox(),
+                ],
               );
             }),
           );

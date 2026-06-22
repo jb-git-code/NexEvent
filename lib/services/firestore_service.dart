@@ -21,6 +21,13 @@ class FirestoreService {
     await FirebaseFirestore.instance.collection('events').doc(eventId).delete();
   }
 
+  Future<void> deleteAnnouncemnt(String eventId) async {
+    await FirebaseFirestore.instance
+        .collection('announcements')
+        .doc(eventId)
+        .delete();
+  }
+
   Future<void> updateEvent(EventModel event, String did) async {
     await FirebaseFirestore.instance
         .collection('events')
