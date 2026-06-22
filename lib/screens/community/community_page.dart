@@ -65,7 +65,16 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Column(children: [Text(doc["title"]), Text(doc["content"])]),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      margin: EdgeInsets.all(16),
+                      color: Colors.lime,
+                      child: Column(
+                        children: [Text(doc["title"]), Text(doc["content"])],
+                      ),
+                    ),
+                  ),
                   (user!.role == 'admin')
                       ? Padding(
                           padding: const EdgeInsets.all(8.0),

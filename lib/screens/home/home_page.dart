@@ -9,7 +9,7 @@ import 'package:nexevent/screens/admin/announcement_page.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/auth/scanner_page.dart';
-import 'package:nexevent/screens/home/all_announcements.dart';
+import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';

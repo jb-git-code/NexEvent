@@ -78,6 +78,10 @@ class NotificationService {
         ?.createNotificationChannel(channel);
 
     await requestPermission();
+    await FirebaseMessaging.instance
+    .subscribeToTopic(
+      "announcements",
+    );
     listenForegroundMessages();
   }
 }
