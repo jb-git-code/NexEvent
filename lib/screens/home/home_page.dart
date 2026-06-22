@@ -9,6 +9,7 @@ import 'package:nexevent/screens/admin/announcement_page.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/auth/scanner_page.dart';
+import 'package:nexevent/screens/home/all_announcements.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
@@ -62,7 +63,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     loadUser();
   }
 
-  List<Widget> pages = [EventsPage(), MyEventsPage(), ProfilePage()];
+  List<Widget> pages = [
+    EventsPage(),
+    MyEventsPage(),
+    AllAnnouncements(),
+    ProfilePage(),
+  ];
   int _selectedIndex = 0;
 
   @override
@@ -243,6 +249,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             label: 'My Tickets',
             icon: Icon(Icons.confirmation_number_outlined),
             activeIcon: Icon(Icons.confirmation_number),
+          ),
+          BottomNavigationBarItem(
+            label: 'News',
+            icon: Icon(Icons.newspaper),
+            activeIcon: Icon(Icons.newspaper_rounded),
           ),
           BottomNavigationBarItem(
             label: 'Profile',
