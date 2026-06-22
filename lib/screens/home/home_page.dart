@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/auth_state_provider.dart';
 import 'package:nexevent/providers/user_provider.dart';
+import 'package:nexevent/screens/admin/announcement_page.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/auth/scanner_page.dart';
@@ -162,6 +163,32 @@ class _HomePageState extends ConsumerState<HomePage> {
                       );
                     },
                     icon: const Icon(Icons.post_add_rounded, size: 22),
+                  ),
+                )
+              : const SizedBox(),
+          (isLoading)
+              ? const CircularProgressIndicator()
+              : (role != 'student')
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: IconButton(
+                    style: IconButton.styleFrom(
+                      backgroundColor: primaryColor.withValues(alpha: 0.08),
+                      foregroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AnnouncementPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.pending_actions_outlined, size: 22),
                   ),
                 )
               : const SizedBox(),
