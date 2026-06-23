@@ -4,6 +4,7 @@ class AnnouncementModel {
   final String content;
   final String author;
   final DateTime createdAt;
+  final bool isPinned;
 
   AnnouncementModel({
     required this.id,
@@ -11,6 +12,7 @@ class AnnouncementModel {
     required this.content,
     required this.author,
     required this.createdAt,
+    required this.isPinned
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class AnnouncementModel {
       "content": content,
       "author": author,
       "createdAt": createdAt,
+      "isPinned" :isPinned,
     };
   }
 
@@ -32,6 +35,7 @@ class AnnouncementModel {
       content: map["content"],
       author: map["author"],
       createdAt: map["createdAt"].toDate(),
+      isPinned: map["isPinned"] ?? false,
     );
   }
 }

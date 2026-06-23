@@ -18,6 +18,7 @@ class AllAnnouncements extends ConsumerStatefulWidget {
 }
 
 class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
+  bool isPinned = false;
   Future<void> _confirmDelete(String docId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -79,6 +80,13 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
         .delete();
   }
 
+  Future<void> togglePin(String announcementId, bool currentState) async {
+    await FirebaseFirestore.instance
+        .collection("announcements")
+        .doc(announcementId)
+        .update({"isPinned": !currentState});
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -95,7 +103,11 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
         foregroundColor: Colors.black87,
       ),
       body: StreamBuilder(
-        stream: FirestoreService().getEvents('announcements'),
+        stream: FirebaseFirestore.instance
+            .collection('announcements')
+            .orderBy("isPinned", descending: true)
+            .orderBy("createdAt", descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -175,6 +187,25 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          (doc["isPinned"])
+                              ? IconButton(
+                                  onPressed: () {
+                                    togglePin(doc["id"], doc["isPinned"]);
+                                  },
+                                  color: Colors.orange,
+                                  icon: Icon(Icons.push_pin),
+                                )
+                              : IconButton(
+                                  onPressed: () {
+                                    togglePin(doc["id"], doc["isPinned"]);
+                                  },
+                                  icon: Icon(Icons.push_pin),
+                                ),
+                        ],
+                      ),
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(

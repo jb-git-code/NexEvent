@@ -26,6 +26,7 @@ class _AnnouncementPageState extends ConsumerState<AnnouncementPage> {
       content: content.text,
       author: (user == null) ? 'admin' : user.name,
       createdAt: DateTime.now(),
+      isPinned: false,
     );
 
     try {
