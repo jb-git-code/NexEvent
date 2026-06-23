@@ -7,7 +7,7 @@ import 'package:nexevent/screens/home/profile_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
 // final likeProvider = StateProvider<bool> ((ref){
-  
+
 // });
 
 class AllAnnouncements extends ConsumerStatefulWidget {
@@ -212,6 +212,53 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                           ],
                         ),
                       ),
+                      Column(
+                        children: [
+                          Icon(Icons.favorite, color: Colors.red),
+                          StreamBuilder(
+                            stream: FirebaseFirestore.instance
+                                .collection("announcements")
+                                .doc(doc["id"])
+                                .collection("likes")
+                                .snapshots(),
+
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Text("0");
+                              }
+
+                              return Text(
+                                snapshot.data!.docs.length.toString(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 25),
+                      Column(
+                        children: [
+                          Icon(Icons.messenger, color: Colors.blue),
+                          StreamBuilder(
+                            stream: FirebaseFirestore.instance
+                                .collection("announcements")
+                                .doc(doc["id"])
+                                .collection("comments")
+                                .snapshots(),
+
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Text("0");
+                              }
+
+                              return Text(
+                                snapshot.data!.docs.length.toString(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(width: 25),
                       if (user?.role == 'admin')
                         InkWell(
                           onTap: () => _confirmDelete(docId),

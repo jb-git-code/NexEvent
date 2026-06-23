@@ -62,4 +62,22 @@ class FirestoreService {
         .doc(eventId)
         .set({"usedId": usedId, "eventId": eventId});
   }
+
+  Future<void> likeAnnouncement(String announcementId, String uid) async {
+    await FirebaseFirestore.instance
+        .collection("announcements")
+        .doc(announcementId)
+        .collection("likes")
+        .doc(uid)
+        .set({"likedAt": Timestamp.now()});
+  }
+
+  Future<void> unlikeAnnouncement(String announcementId, String uid) async {
+    await FirebaseFirestore.instance
+        .collection("announcements")
+        .doc(announcementId)
+        .collection("likes")
+        .doc(uid)
+        .delete();
+  }
 }
