@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
@@ -103,7 +104,8 @@ class _EventsPageState extends ConsumerState<EventsPage> {
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
-
+              // final DateTime eventDate = data["eventDate"].toDate();
+              print('date -> $data["eventDate"]');
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: GestureDetector(
@@ -174,6 +176,21 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                                 children: [
                                   Text(
                                     data["name"] ?? 'Untitled Event',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    data["eventDate"] == null
+                                        ? "Date not available"
+                                        : DateFormat(
+                                            "dd MMM yyyy",
+                                          ).format(data["eventDate"].toDate()),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(

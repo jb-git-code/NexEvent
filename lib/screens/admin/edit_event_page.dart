@@ -184,6 +184,25 @@ class _EditEventPageState extends State<EditEventPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () async {
+                  final selectedDate = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2035),
+                    initialDate: DateTime.now(),
+                  );
+
+                  final selectedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+
+                  final eventDateTime = DateTime(
+                    selectedDate!.year,
+                    selectedDate.month,
+                    selectedDate.day,
+                    selectedTime!.hour,
+                    selectedTime.minute,
+                  );
                   await FirestoreService().updateEvent(
                     EventModel(
                       eventId: widget.docId,
@@ -192,6 +211,7 @@ class _EditEventPageState extends State<EditEventPage> {
                       venue: _controller3.text.trim(),
                       category: _controller4.text.trim(),
                       imageUrl: img,
+                      eventDate: eventDateTime,
                     ),
                     widget.docId,
                   );

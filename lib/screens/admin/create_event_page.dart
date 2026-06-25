@@ -55,6 +55,25 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
   Future<void> createEvent() async {
     try {
+      final selectedDate = await showDatePicker(
+        context: context,
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2035),
+        initialDate: DateTime.now(),
+      );
+
+      final selectedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      final eventDateTime = DateTime(
+        selectedDate!.year,
+        selectedDate.month,
+        selectedDate.day,
+        selectedTime!.hour,
+        selectedTime.minute,
+      );
       await FirestoreService().createEvent(
         EventModel(
           eventId: uid,
@@ -63,6 +82,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
           venue: _controller3.text.trim(),
           category: _controller4.text.trim(),
           imageUrl: img,
+          eventDate: eventDateTime,
         ),
       );
       if (context.mounted) {
@@ -105,7 +125,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.12),
+                    ),
                   ),
                   child: imageFile != null
                       ? ClipRRect(
