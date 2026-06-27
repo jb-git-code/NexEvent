@@ -3,12 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/models/registration_model.dart';
-import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/notification_service.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
+import 'package:nexevent/widgets/grid_background.dart';
 
 class EventDetailPage extends StatefulWidget {
   const EventDetailPage({
@@ -22,15 +21,10 @@ class EventDetailPage extends StatefulWidget {
   });
 
   final String name;
-
   final String eventId;
-
   final String description;
-
   final String venue;
-
   final String did;
-
   final String imageUrl;
 
   @override
@@ -40,350 +34,349 @@ class EventDetailPage extends StatefulWidget {
 class _EventDetailPageState extends State<EventDetailPage> {
   String role = "student";
   bool isLoading = true;
-  Future<void> loadRole() async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    final doc = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(uid)
-        .get();
-    final map = doc.data() as Map<String, dynamic>;
-    setState(() {
-      role = map["role"];
-      print(map["role"]);
-    });
+  Future<void> loadRole() async {
+    try {
+      String uid = FirebaseAuth.instance.currentUser!.uid;
+      final doc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(uid)
+          .get();
+      if (doc.exists && doc.data() != null) {
+        final map = doc.data() as Map<String, dynamic>;
+        setState(() {
+          role = map["role"] ?? "student";
+        });
+      }
+    } catch (e) {
+      print("Error loading role: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     loadRole();
-    setState(() {
-      isLoading = false;
-    });
-    // print(role);
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Event Details'),
+        title: const Text(
+          'Event Details',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(24.0),
+      body: GridDotBackground(
+        child: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              )
+            : SafeArea(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Event Poster Image Card
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: Container(
-                        width: double.infinity,
-                        height: 220,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: (widget.imageUrl.isNotEmpty)
-                            ? CachedNetworkImage(
-                                imageUrl: widget.imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator(),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Event Poster Image Card (Dashed or Outlined layout)
+                            Container(
+                              width: double.infinity,
+                              height: 220,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: const Color(0xFFEFF1F4),
+                                  width: 1.5,
                                 ),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                              )
-                            : Container(
-                                color: primaryColor.withValues(alpha: 0.08),
-                                child: Icon(
-                                  Icons.event_rounded,
-                                  color: primaryColor,
-                                  size: 48,
-                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x05000000),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                              clipBehavior: Clip.antiAlias,
+                              child: (widget.imageUrl.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: widget.imageUrl,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF111111)),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.broken_image_rounded, size: 28),
+                                    )
+                                  : Container(
+                                      color: const Color(0xFFEEF2FF),
+                                      child: const Icon(
+                                        Icons.event_note_rounded,
+                                        color: Color(0xFF7C4DFF),
+                                        size: 48,
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(height: 24),
 
-                    // Event Title & Badge
-                    Text(
-                      widget.name,
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF111827),
-                        letterSpacing: -0.6,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'ID: ${widget.eventId}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF4B5563),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Divider(color: Color(0xFFF3F4F6), height: 1),
-                    const SizedBox(height: 24),
-
-                    // Venue Info Row
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: primaryColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(
-                            Icons.location_on_rounded,
-                            color: primaryColor,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'LOCATION',
-                                style: TextStyle(
+                            // Event Title & ID Badge
+                            Text(
+                              widget.name,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF111111),
+                                letterSpacing: -0.6,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5),
+                              ),
+                              child: Text(
+                                'EVENT ID: ${widget.eventId}',
+                                style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.grey,
-                                  letterSpacing: 0.8,
+                                  color: Color(0xFF475569),
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                widget.venue,
-                                style: const TextStyle(
+                            ),
+                            const SizedBox(height: 24),
+                            const Divider(color: Color(0xFFE2E8F0), height: 1),
+                            const SizedBox(height: 24),
+
+                            // Venue Checklist Node (Outline style)
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: const Color(0xFFEFF1F4),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: const Color(0xFFEEF2FF),
+                                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                                    ),
+                                    child: const Icon(
+                                      Icons.location_on_rounded,
+                                      color: Color(0xFF7C4DFF),
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'LOCATION',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF94A3B8),
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          widget.venue,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF111111),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // About Node (Outline style)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: const Color(0xFFEFF1F4),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'ABOUT THIS EVENT',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF94A3B8),
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    widget.description.isNotEmpty
+                                        ? widget.description
+                                        : 'No description available for this event.',
+                                    style: const TextStyle(
+                                      fontSize: 14.5,
+                                      height: 1.6,
+                                      color: Color(0xFF475569),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Bottom Action Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 18.0,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFEFF1F4), width: 1.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          if (role == 'admin') ...[
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  side: const BorderSide(color: Color(0xFFD1D5DB), width: 1.5),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditEventPage(docId: widget.did),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Update',
+                                  style: TextStyle(
+                                    color: Color(0xFF111111),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF111111),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final uid = FirebaseAuth.instance.currentUser!.uid;
+
+                                final query = await FirebaseFirestore.instance
+                                    .collection("registrations")
+                                    .where("userId", isEqualTo: uid)
+                                    .where("eventId", isEqualTo: widget.eventId)
+                                    .get();
+
+                                if (query.docs.isEmpty) {
+                                  final regId = const Uuid().v4();
+                                  await FirestoreService().registerEvent(
+                                    RegistrationModel(
+                                      registrationId: regId,
+                                      eventId: widget.eventId,
+                                      userId: uid,
+                                      attented: false,
+                                    ),
+                                  );
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Registered Successfully!"),
+                                      ),
+                                    );
+                                  }
+                                  await NotificationService().showRegistrationSuccess(
+                                    widget.name,
+                                  );
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Already Registered"),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: const Text(
+                                "Register",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF111827),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 28),
-
-                    // Description Section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ABOUT THIS EVENT',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.grey,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.description.isNotEmpty
-                              ? widget.description
-                              : 'No description available for this event.',
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 1.6,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
-            ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //   children: [
-            //     Text(
-            //       'Share this event with friends',
-            //       style: TextStyle(fontSize: 20),
-            //     ),
-            //     Padding(
-            //       padding: const EdgeInsets.all(8.0),
-            //       child: IconButton(
-            //         onPressed: () {
-            //           print('shared');
-            //           SharePlus.instance.share(
-            //             ShareParams(
-            //               text:
-            //                   '''🎉 ${widget.name}
-
-            //                           📍 Venue: ${widget.venue}
-
-            //                           📝 ${widget.description}
-
-            //                           🔗 Open in NexEvent:nexevent://event/${widget.eventId}
-
-            //                         ''',
-            //             ),
-            //           );
-            //         },
-
-            //         icon: const Icon(Icons.share),
-            //       ),
-            //     ),
-            //   ],
-            // ),
-
-            // Bottom Action Bar
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-                vertical: 16.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-                border: const Border(
-                  top: BorderSide(color: Color(0xFFF3F4F6), width: 1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  if (role == 'admin') ...[
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: Colors.grey[300]!),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditEventPage(docId: widget.did),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Update',
-                          style: TextStyle(
-                            color: Color(0xFF111827),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        shadowColor: primaryColor.withValues(alpha: 0.3),
-                        elevation: 4,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      onPressed: () async {
-                        String regId = const Uuid().v4();
-                        String useId = FirebaseAuth.instance.currentUser!.uid;
-
-                        final query = await FirebaseFirestore.instance
-                            .collection("registrations")
-                            .where("userId", isEqualTo: useId)
-                            .where("eventId", isEqualTo: widget.eventId)
-                            .get();
-
-                        if (query.docs.isEmpty) {
-                          await FirestoreService().registerEvent(
-                            RegistrationModel(
-                              registrationId: regId,
-                              eventId: widget.eventId,
-                              userId: useId,
-                              attented: false,
-                            ),
-                          );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Registered Successfully!"),
-                              ),
-                            );
-                          }
-                          await NotificationService().showRegistrationSuccess(
-                            widget.name,
-                          );
-                        } else {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Already Registered"),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      child: const Text(
-                        "Register",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

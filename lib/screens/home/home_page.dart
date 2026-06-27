@@ -116,117 +116,78 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
         centerTitle: false,
-        backgroundColor: const Color.fromARGB(255, 201, 236, 194),
+        backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
-          (isLoading)
-              ? const CircularProgressIndicator()
-              : (role != 'student')
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: IconButton(
-                    style: IconButton.styleFrom(
-                      backgroundColor: primaryColor.withValues(alpha: 0.08),
-                      foregroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(10),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-
-                        MaterialPageRoute(
-                          builder: (_) => const QRScannerPage(),
-                        ),
-                      );
-                    },
-                    icon: Icon(Icons.qr_code_rounded),
+          if (!isLoading && role != 'student') ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: primaryColor.withValues(alpha: 0.08),
+                  foregroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
-              : const SizedBox(),
-          (isLoading)
-              ? const CircularProgressIndicator()
-              : (role != 'student')
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: IconButton(
-                    style: IconButton.styleFrom(
-                      backgroundColor: primaryColor.withValues(alpha: 0.08),
-                      foregroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const QRScannerPage(),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CreateEventPage(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.post_add_rounded, size: 22),
+                  );
+                },
+                icon: const Icon(Icons.qr_code_rounded),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: primaryColor.withValues(alpha: 0.08),
+                  foregroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
-              : const SizedBox(),
-          (isLoading)
-              ? const CircularProgressIndicator()
-              : (role != 'student')
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: IconButton(
-                    style: IconButton.styleFrom(
-                      backgroundColor: primaryColor.withValues(alpha: 0.08),
-                      foregroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateEventPage(),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AnnouncementPage(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.pending_actions_outlined, size: 22),
+                  );
+                },
+                icon: const Icon(Icons.post_add_rounded, size: 22),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: primaryColor.withValues(alpha: 0.08),
+                  foregroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
-              : const SizedBox(),
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 4.0, right: 16.0),
-          //   child: IconButton(
-          //     style: IconButton.styleFrom(
-          //       backgroundColor: Colors.red.withValues(alpha: 0.08),
-          //       foregroundColor: Colors.red[700],
-          //       shape: RoundedRectangleBorder(
-          //         borderRadius: BorderRadius.circular(12),
-          //       ),
-          //       padding: const EdgeInsets.all(10),
-          //     ),
-          //     onPressed: () async {
-          //       final authService = AuthService();
-          //       await authService.logout();
-          //       await FirebaseAuth.instance.signOut();
-          //       ref.read(currentUserProvider.notifier).clearUser();
-          //       if (context.mounted) {
-          //         Navigator.pushAndRemoveUntil(
-          //           context,
-          //           MaterialPageRoute(
-          //             builder: (context) => const loginScreen(),
-          //           ),
-          //           (route) => false,
-          //         );
-          //       }
-          //     },
-          //     icon: const Icon(Icons.logout_rounded, size: 22),
-          //   ),
-          // ),
+                  padding: const EdgeInsets.all(10),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AnnouncementPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.pending_actions_outlined, size: 22),
+              ),
+            ),
+          ],
         ],
       ),
       body: pages[_selectedIndex],

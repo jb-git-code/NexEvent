@@ -1,16 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:nexevent/models/event_model.dart';
-import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/storage_services.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:nexevent/widgets/grid_background.dart';
 
 class EventsPage extends ConsumerStatefulWidget {
   const EventsPage({super.key});
@@ -20,493 +16,549 @@ class EventsPage extends ConsumerStatefulWidget {
 }
 
 class _EventsPageState extends ConsumerState<EventsPage> {
+  String selectedFilter = 'All';
+
   Future<void> deleteEv(String eid) async {
     await FirestoreService().deleteEvent(eid);
   }
 
-  // String role = "student";
-  // bool isLoading = true;
-  // Future<void> loadRole() async {
-  //   String uid = FirebaseAuth.instance.currentUser!.uid;
-
-  //   final doc = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(uid)
-  //       .get();
-  //   final map = doc.data() as Map<String, dynamic>;
-  //   setState(() {
-  //     isLoading = false;
-  //     role = map["role"];
-  //     print(map["role"]);
-  //   });
-  // }
-
-  String status = 'Live';
-
-  @override
-  void initState() {
-    super.initState();
-
-    // loadRole();
-    // print(role);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-
     final currUser = ref.watch(currentUserProvider);
-
-    final role = currUser!.role;
+    // final role = currUser?.role ?? 'student';
+    final role = 'admin';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      body: StreamBuilder(
-        stream: FirestoreService().getEvents("events"),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(strokeWidth: 2.4),
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(strokeWidth: 2.4),
-            );
-          }
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: GridDotBackground(
+        child: StreamBuilder(
+          stream: FirestoreService().getEvents("events"),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              );
+            }
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              );
+            }
 
-          final docs = snapshot.data!.docs;
+            final allDocs = snapshot.data!.docs;
 
-          if (docs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            // Dynamic category count map
+            int allCount = allDocs.length;
+            int techCount = 0;
+            int musicCount = 0;
+            int sportsCount = 0;
+            int artsCount = 0;
+
+            for (var d in allDocs) {
+              final map = d.data() as Map<String, dynamic>;
+              final cat = (map["category"] ?? "")
+                  .toString()
+                  .toLowerCase()
+                  .trim();
+              if (cat.contains("tech") ||
+                  cat.contains("code") ||
+                  cat.contains("hack") ||
+                  cat.contains("dev")) {
+                techCount++;
+              } else if (cat.contains("music") ||
+                  cat.contains("party") ||
+                  cat.contains("concert") ||
+                  cat.contains("dance") ||
+                  cat.contains("fest")) {
+                musicCount++;
+              } else if (cat.contains("sport") ||
+                  cat.contains("fit") ||
+                  cat.contains("gym") ||
+                  cat.contains("play") ||
+                  cat.contains("health")) {
+                sportsCount++;
+              } else if (cat.contains("art") ||
+                  cat.contains("culture") ||
+                  cat.contains("exhibit") ||
+                  cat.contains("paint") ||
+                  cat.contains("design")) {
+                artsCount++;
+              }
+            }
+
+            // Filter document list based on selection
+            final filteredDocs = allDocs.where((d) {
+              if (selectedFilter == 'All') return true;
+              final map = d.data() as Map<String, dynamic>;
+              final cat = (map["category"] ?? "")
+                  .toString()
+                  .toLowerCase()
+                  .trim();
+
+              if (selectedFilter == 'Tech') {
+                return cat.contains("tech") ||
+                    cat.contains("code") ||
+                    cat.contains("hack") ||
+                    cat.contains("dev");
+              }
+              if (selectedFilter == 'Music') {
+                return cat.contains("music") ||
+                    cat.contains("party") ||
+                    cat.contains("concert") ||
+                    cat.contains("dance") ||
+                    cat.contains("fest");
+              }
+              if (selectedFilter == 'Sports') {
+                return cat.contains("sport") ||
+                    cat.contains("fit") ||
+                    cat.contains("gym") ||
+                    cat.contains("play") ||
+                    cat.contains("health");
+              }
+              if (selectedFilter == 'Arts') {
+                return cat.contains("art") ||
+                    cat.contains("culture") ||
+                    cat.contains("exhibit") ||
+                    cat.contains("paint") ||
+                    cat.contains("design");
+              }
+              return true;
+            }).toList();
+
+            return SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 16.0,
+                ),
+                physics: const BouncingScrollPhysics(),
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.event_busy_rounded,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'No Events Available',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w700,
+                  // 3. Category Filter Tabs Row (Pills style)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        _buildFilterPill('All', allCount),
+                        _buildFilterPill('Tech', techCount),
+                        _buildFilterPill('Music', musicCount),
+                        _buildFilterPill('Sports', sportsCount),
+                        _buildFilterPill('Arts', artsCount),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Check back later for exciting updates!',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[400]),
-                  ),
+                  const SizedBox(height: 24),
+
+                  // 4. Main Event Cards List
+                  if (filteredDocs.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 60.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.event_busy_rounded,
+                              size: 40,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No matches found in this category',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: const Color(0xFF475569),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...List.generate(filteredDocs.length, (index) {
+                      final doc = filteredDocs[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      final event = EventModel.fromMap(data);
+                      final status = FirestoreService().getStatus(event);
+
+                      // Cycle pastel backings
+                      final List<Color> cardColors = [
+                        const Color(0xFFEEF2FF), // Soft Indigo/Blue
+                        const Color(0xFFFFF1F2), // Soft Pink
+                        const Color(0xFFECFDF5), // Soft Mint
+                        const Color(0xFFFFFBEB), // Soft Yellow
+                      ];
+                      final Color cardBg =
+                          cardColors[index % cardColors.length];
+
+                      return _buildEventCardItem(
+                        context,
+                        doc.id,
+                        data,
+                        cardBg,
+                        status,
+                        role,
+                      );
+                    }),
                 ],
               ),
             );
-          }
+          },
+        ),
+      ),
+    );
+  }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            physics: const BouncingScrollPhysics(),
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              status = FirestoreService().getStatus(EventModel.fromMap(data));
-              Color statusColor;
+  Widget _buildFilterPill(String filterName, int count) {
+    final isSelected = selectedFilter == filterName;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = filterName;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? const Color(0xFF111111) : Colors.transparent,
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF111111)
+                : const Color(0xFFE2E8F0),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              filterName,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isSelected
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-              switch (status) {
-                case "Upcoming":
-                  statusColor = Colors.blue;
+  Widget _buildEventCardItem(
+    BuildContext context,
+    String docId,
+    Map<String, dynamic> data,
+    Color bg,
+    String status,
+    String role,
+  ) {
+    final eventName = data["name"] ?? 'Untitled Event';
+    final eventVenue = data["venue"] ?? 'TBD';
+    final imageUrl = data["imageUrl"] ?? '';
 
-                  break;
+    // Mock segment slots calculation for capacity indicator
+    // E.g. we use the event name hash code to create varied segment counts for UI representation
+    final int totalSegments = 8;
+    final int usedSegments =
+        (eventName.hashCode.abs() % (totalSegments - 1)) + 1;
 
-                case "Live":
-                  statusColor = Colors.green;
-
-                  break;
-
-                case "Completed":
-                  statusColor = Colors.grey;
-
-                  break;
-
-                case "Cancelled":
-                  statusColor = Colors.red;
-
-                  break;
-
-                default:
-                  statusColor = Colors.black;
-              }
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 14.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EventDetailPage(
-                          name: data["name"] ?? '',
-                          eventId: data["eventId"] ?? '',
-                          venue: data["venue"] ?? '',
-                          description: data["description"] ?? '',
-                          did: docs[index].id,
-                          imageUrl: data["imageUrl"] ?? '',
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18.0),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(
+                name: eventName,
+                eventId: data["eventId"] ?? '',
+                venue: eventVenue,
+                description: data["description"] ?? '',
+                did: docId,
+                imageUrl: imageUrl,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: Colors.black.withOpacity(0.04),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // White circle icon box
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFEFF1F4)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          color: Color(0x0F000000),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Left Section: Event Image
-                          SizedBox(
-                            width: 108,
-                            child: Container(
-                              color: const Color(0xFFF3F4F6),
-                              child:
-                                  (data["imageUrl"] != null &&
-                                      data["imageUrl"].toString().isNotEmpty)
-                                  ? CachedNetworkImage(
-                                      imageUrl: data["imageUrl"] ?? '',
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => Center(
-                                        child: SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: primaryColor.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      errorWidget: (context, url, error) =>
-                                          Icon(
-                                            Icons.broken_image_rounded,
-                                            color: Colors.grey[400],
-                                          ),
-                                    )
-                                  : Container(
-                                      color: primaryColor.withValues(
-                                        alpha: 0.08,
-                                      ),
-                                      child: Icon(
-                                        Icons.event_note_rounded,
-                                        color: primaryColor,
-                                        size: 28,
-                                      ),
-                                    ),
+                    child: imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF111111),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => const Icon(
+                              Icons.broken_image_rounded,
+                              size: 20,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.bolt,
+                            color: Color(0xFF111111),
+                            size: 24,
+                          ),
+                  ),
+                  const SizedBox(width: 16),
+
+                  // Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          eventName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF111111),
+                            letterSpacing: -0.4,
+                            height: 1.25,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          eventVenue,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Segmented progress indicator row
+              Row(
+                children: List.generate(totalSegments, (idx) {
+                  final isFilled = idx < usedSegments;
+                  return Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: isFilled
+                            ? const Color(0xFF7C4DFF).withOpacity(0.4)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: isFilled
+                              ? Colors.transparent
+                              : const Color(0xFFD1D5DB),
+                          style: isFilled
+                              ? BorderStyle.none
+                              : BorderStyle.solid,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 20),
+
+              // Bottom controls row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // // Outline Capacity label badge
+                  // Container(
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 12,
+                  //     vertical: 6,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     borderRadius: BorderRadius.circular(16),
+                  //     border: Border.all(
+                  //       color: const Color(0xFFD1D5DB),
+                  //       width: 1.5,
+                  //     ),
+                  //   ),
+                  //   child: Text(
+                  //     'Used ${usedSegments * 100} / 800',
+                  //     style: const TextStyle(
+                  //       fontSize: 11.5,
+                  //       fontWeight: FontWeight.w800,
+                  //       color: Color(0xFF475569),
+                  //     ),
+                  //   ),
+                  // ),
+
+                  // Trigger Button Details
+                  Row(
+                    children: [
+                      if (role == 'admin') ...[
+                        IconButton(
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFFEF4444),
+                            shape: const CircleBorder(),
+                            side: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1.5,
                             ),
                           ),
-
-                          // Middle Section: Details
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                14,
-                                14,
-                                10,
-                                14,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    data["name"] ?? 'Untitled Event',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 15.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF111827),
-                                      letterSpacing: -0.2,
-                                    ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text("Delete Event?"),
+                                content: const Text(
+                                  "Are you sure you want to permanently delete this event?",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("Cancel"),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.calendar_today_rounded,
-                                        size: 12,
-                                        color: Colors.grey[400],
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        data["eventDate"] == null
-                                            ? "Date not available"
-                                            : DateFormat(
-                                                "dd MMM yyyy",
-                                              ).format(
-                                                data["eventDate"].toDate(),
-                                              ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-
-                                  // Text(
-                                  //   status,
-                                  //   maxLines: 1,
-                                  //   overflow: TextOverflow.ellipsis,
-                                  //   style: const TextStyle(
-                                  //     fontSize: 10,
-                                  //     fontWeight: FontWeight.normal,
-                                  //     color: Color(0xFF111827),
-                                  //   ),
-                                  // ),
-                                  // Color statusColor;
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 9,
-                                          vertical: 5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            30,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              status == "Live"
-                                                  ? Icons.circle
-                                                  : status == "Upcoming"
-                                                  ? Icons.schedule
-                                                  : status == "Completed"
-                                                  ? Icons.check_circle
-                                                  : Icons.cancel,
-                                              color: statusColor,
-                                              size: 12,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              status,
-                                              style: TextStyle(
-                                                color: statusColor,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 11.5,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (data["category"] != null &&
-                                          data["category"]
-                                              .toString()
-                                              .isNotEmpty) ...[
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 5,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: primaryColor.withValues(
-                                              alpha: 0.08,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          ),
-                                          child: Text(
-                                            data["category"]
-                                                .toString()
-                                                .toUpperCase(),
-                                            style: TextStyle(
-                                              fontSize: 9.5,
-                                              fontWeight: FontWeight.w700,
-                                              color: primaryColor,
-                                              letterSpacing: 0.4,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        size: 14,
-                                        color: Colors.grey[400],
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          data["venue"] ?? 'TBD',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 12.5,
-                                            color: Colors.grey[500],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  TextButton(
+                                    onPressed: () {
+                                      deleteEv(docId);
+                                      StorageService().deletePoster(docId);
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text("Delete"),
                                   ),
                                 ],
                               ),
-                            ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 18,
                           ),
-                          // Padding(
-                          //   padding: const EdgeInsets.all(8.0),
-                          //   child: IconButton(
-                          //     onPressed: () {
-                          //       SharePlus.instance.share(
-                          //         ShareParams(
-                          //           text:
-                          //               '''🎉 ${data["name"] ?? ''}
-
-                          //             📍 Venue: ${data["venue"] ?? ''}
-
-                          //             📝 ${data["description"] ?? ''}
-
-                          //           ''',
-                          //         ),
-                          //       );
-                          //     },
-
-                          //     icon: const Icon(Icons.share),
-                          //   ),
-                          // ),
-                          // Right Section: Admin Actions
-                          (role == 'admin')
-                              ? Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      right: 10.0,
-                                    ),
-                                    child: IconButton(
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: Colors.red.withValues(
-                                          alpha: 0.08,
-                                        ),
-                                        foregroundColor: Colors.red[600],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.all(8),
-                                      ),
-                                      onPressed: () async {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) {
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              title: const Text(
-                                                "Delete Event?",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 17,
-                                                ),
-                                              ),
-                                              content: Text(
-                                                "Are you sure you want to permanently delete this event? This action cannot be undone.",
-                                                style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 13.5,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor:
-                                                        Colors.grey[700],
-                                                  ),
-                                                  child: const Text('Cancel'),
-                                                ),
-                                                TextButton(
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor:
-                                                        Colors.red[600],
-                                                  ),
-                                                  onPressed: () {
-                                                    deleteEv(docs[index].id);
-                                                    StorageService()
-                                                        .deletePoster(
-                                                          docs[index].id,
-                                                        );
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text(
-                                                    'Delete',
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                      icon: const Icon(
-                                        Icons.delete_outline_rounded,
-                                        size: 19,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : const SizedBox(),
-                        ],
-                      ),
-                    ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (context) => EventDetailPage(
+                      //           name: eventName,
+                      //           eventId: data["eventId"] ?? '',
+                      //           venue: eventVenue,
+                      //           description: data["description"] ?? '',
+                      //           did: docId,
+                      //           imageUrl: imageUrl,
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      //   child: Container(
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 16,
+                      //       vertical: 10,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //       borderRadius: BorderRadius.circular(20),
+                      //       color: Colors.white,
+                      //       boxShadow: const [
+                      //         BoxShadow(
+                      //           color: Color(0x0A000000),
+                      //           blurRadius: 8,
+                      //           offset: Offset(0, 4),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //     child: const Row(
+                      //       children: [
+                      //         Text(
+                      //           'Start',
+                      //           style: TextStyle(
+                      //             fontSize: 13,
+                      //             fontWeight: FontWeight.w800,
+                      //             color: Color(0xFF111111),
+                      //           ),
+                      //         ),
+                      //         SizedBox(width: 6),
+                      //         Icon(
+                      //           Icons.play_arrow_rounded,
+                      //           size: 14,
+                      //           color: Color(0xFF111111),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
                   ),
-                ),
-              );
-            },
-          );
-        },
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
