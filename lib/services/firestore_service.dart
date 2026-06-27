@@ -80,4 +80,22 @@ class FirestoreService {
         .doc(uid)
         .delete();
   }
+
+  String getStatus(EventModel event) {
+  final now = DateTime.now();
+
+  if (event.isCancelled) {
+    return "Cancelled";
+  }
+
+  if (now.isBefore(event.eventDate)) {
+    return "Upcoming";
+  }
+
+  if (now.isAfter(event.endDate)) {
+    return "Completed";
+  }
+
+  return "Live";
+}
 }

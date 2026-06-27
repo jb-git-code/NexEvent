@@ -8,6 +8,8 @@ class EventModel {
   final String category;
   final String imageUrl;
   final DateTime eventDate;
+  final DateTime endDate;
+  final bool isCancelled;
 
   EventModel({
     required this.eventId,
@@ -17,6 +19,8 @@ class EventModel {
     required this.category,
     required this.imageUrl,
     required this.eventDate,
+    required this.endDate,
+    required this.isCancelled,
   });
 
   factory EventModel.fromMap(Map<String, dynamic> map) {
@@ -28,6 +32,8 @@ class EventModel {
       category: map["category"] ?? "",
       imageUrl: map["imageUrl"] ?? "",
       eventDate: (map["eventDate"] as Timestamp).toDate(),
+      endDate: (map["endDate"] as Timestamp).toDate(),
+      isCancelled: map["isCancelled"],
     );
   }
 
@@ -40,6 +46,8 @@ class EventModel {
       "category": category,
       "imageUrl": imageUrl,
       "eventDate": Timestamp.fromDate(eventDate),
+      "endDate": Timestamp.fromDate(endDate),
+      "isCancelled": isCancelled,
     };
   }
 }
