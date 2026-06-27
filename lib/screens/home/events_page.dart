@@ -194,8 +194,8 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
                                       color: Color(0xFF111827),
                                     ),
                                   ),
