@@ -30,7 +30,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   Future<void> markAttendance(String id) async {
     await FirebaseFirestore.instance.collection('registrations').doc(id).update(
-      {"attendance": true},
+      {"attended": true},
     );
     final snack = SnackBar(content: Text('Attendance Marked'));
     ScaffoldMessenger.of(context).showSnackBar(snack);
@@ -39,12 +39,48 @@ class _QRScannerPageState extends State<QRScannerPage> {
     }
   }
 
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  Future<void> handleScan(String registrationId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection("registrations")
+        .doc(registrationId)
+        .get();
+
+    if (!doc.exists) {
+      _showMessage("Invalid QR Code");
+      return;
+    }
+
+    if (doc["attended"] == true) {
+      _showMessage("Attendance already marked");
+      return;
+    }
+
+    await FirebaseFirestore.instance
+        .collection("registrations")
+        .doc(registrationId)
+        .update({"attended": true});
+
+    _showMessage("Attendance Marked");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Scan QR")),
       body: MobileScanner(
-        onDetect: (capture) {
+        onDetect: (capture) async {
           if (scanned) return;
 
           final barcode = capture.barcodes.first;
@@ -52,20 +88,24 @@ class _QRScannerPageState extends State<QRScannerPage> {
           final code = barcode.rawValue;
 
           if (code == null) {
-            Navigator.pop(context);
+            _showMessage("Invalid QR Code");
+
+            return;
           }
 
-          markAttendance(code!);
+          await handleScan(code);
 
-          showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: const Text("Success"),
-                content: const Text("Attendance Marked"),
-              );
-            },
-          );
+          // markAttendance(code!);
+
+          // showDialog(
+          //   context: context,
+          //   builder: (_) {
+          //     return AlertDialog(
+          //       title: const Text("Success"),
+          //       content: const Text("Attendance Marked"),
+          //     );
+          //   },
+          // );
 
           scanned = true;
 

@@ -16,6 +16,7 @@ class UserRegistrations extends ConsumerStatefulWidget {
 class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
   @override
   Widget build(BuildContext context) {
+    print('Regis ID: ${widget.evId}');
     final currentUser = ref.read(currentUserProvider);
     return Scaffold(
       appBar: AppBar(title: Text('Qr Code'), centerTitle: true),

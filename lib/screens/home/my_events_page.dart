@@ -17,6 +17,7 @@ class MyEventsPage extends StatefulWidget {
 class _MyEventsPageState extends State<MyEventsPage> {
   @override
   Widget build(BuildContext context) {
+    print('my events');
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: StreamBuilder(
@@ -67,6 +68,10 @@ class _MyEventsPageState extends State<MyEventsPage> {
               final data = docs[index].data() as Map<String, dynamic>;
               final eid = data["eventId"];
 
+              final rid = data["registrationId"];
+
+              print('regis id: $rid');
+
               return FutureBuilder<DocumentSnapshot>(
                 future: FirebaseFirestore.instance
                     .collection('events')
@@ -94,7 +99,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                UserRegistrations(evId: dd["eventId"] ?? ''),
+                                UserRegistrations(evId: rid ?? ''),
                           ),
                         );
                       },
@@ -163,30 +168,12 @@ class _MyEventsPageState extends State<MyEventsPage> {
                             padding: const EdgeInsets.all(8.0),
                             child: IconButton(
                               iconSize: 32,
-                              // onPressed: () async {
-                              //   try {
-                              //     final uss =
-                              //         FirebaseAuth.instance.currentUser!.uid;
-                              //     await FirestoreService().saveEvent(
-                              //       uss,
-                              //       dd["eventId"] ?? '',
-                              //     );
-                              //     final sb = SnackBar(
-                              //       content: Text('Event Saved'),
-                              //     );
-                              //     ScaffoldMessenger.of(
-                              //       context,
-                              //     ).showSnackBar(sb);
-                              //   } on FirebaseException catch (e) {
-                              //     print(e);
-                              //   }
-                              // },
                               onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        UserRegistrations(evId: eid),
+                                        UserRegistrations(evId: rid),
                                   ),
                                 );
                               },
