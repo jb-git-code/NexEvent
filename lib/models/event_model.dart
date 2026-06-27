@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class EventModel {
   final String eventId;
   final String name;
@@ -5,6 +7,7 @@ class EventModel {
   final String venue;
   final String category;
   final String imageUrl;
+  final DateTime eventDate;
 
   EventModel({
     required this.eventId,
@@ -13,6 +16,7 @@ class EventModel {
     required this.venue,
     required this.category,
     required this.imageUrl,
+    required this.eventDate,
   });
 
   factory EventModel.fromMap(Map<String, dynamic> map) {
@@ -23,6 +27,7 @@ class EventModel {
       venue: map["venue"] ?? "",
       category: map["category"] ?? "",
       imageUrl: map["imageUrl"] ?? "",
+      eventDate: (map["eventDate"] as Timestamp).toDate(),
     );
   }
 
@@ -34,6 +39,7 @@ class EventModel {
       "venue": venue,
       "category": category,
       "imageUrl": imageUrl,
+      "eventDate": Timestamp.fromDate(eventDate),
     };
   }
 }
