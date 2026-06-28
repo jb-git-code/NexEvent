@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/event_model.dart';
@@ -177,7 +178,7 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                             'No matches found in this category',
                             style: TextStyle(
                               fontSize: 15,
-                              color: const Color(0xFF475569),
+                              color: Color(0xFF475569),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -254,18 +255,57 @@ class _EventsPageState extends ConsumerState<EventsPage> {
             const SizedBox(width: 6),
             Text(
               '$count',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isSelected
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF94A3B8),
+                color: Color(0xFF94A3B8),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Formats a Firestore Timestamp / DateTime into "Jun 27, 2026 • 8:47 PM"
+  String _formatDate(dynamic ts) {
+    DateTime? dt;
+    if (ts is Timestamp) {
+      dt = ts.toDate();
+    } else if (ts is DateTime) {
+      dt = ts;
+    }
+    if (dt == null) return 'Date TBA';
+
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final hour12 = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final period = dt.hour >= 12 ? 'PM' : 'AM';
+    final minute = dt.minute.toString().padLeft(2, '0');
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year} • $hour12:$minute $period';
+  }
+
+  // Color for the status chip (live / upcoming / completed / cancelled)
+  Color _statusColor(String status) {
+    final s = status.toLowerCase();
+    if (s.contains('live') || s.contains('ongoing')) {
+      return const Color(0xFF16A34A);
+    }
+    if (s.contains('upcoming')) return const Color(0xFF4F46E5);
+    if (s.contains('cancel')) return const Color(0xFFEF4444);
+    return const Color(0xFF64748B); // completed / default
   }
 
   Widget _buildEventCardItem(
@@ -279,15 +319,15 @@ class _EventsPageState extends ConsumerState<EventsPage> {
     final eventName = data["name"] ?? 'Untitled Event';
     final eventVenue = data["venue"] ?? 'TBD';
     final imageUrl = data["imageUrl"] ?? '';
+    final category = (data["category"] ?? 'General').toString();
+    final isCancelled = data["isCancelled"] == true;
 
-    // Mock segment slots calculation for capacity indicator
-    // E.g. we use the event name hash code to create varied segment counts for UI representation
-    final int totalSegments = 8;
-    final int usedSegments =
-        (eventName.hashCode.abs() % (totalSegments - 1)) + 1;
+    final eventDateStr = _formatDate(data["eventDate"]);
+    final endDateStr = _formatDate(data["endDate"]);
+    final showEndDate = data["endDate"] != null && endDateStr != eventDateStr;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18.0),
+      padding: const EdgeInsets.only(bottom: 14.0),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
@@ -300,12 +340,16 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                 description: data["description"] ?? '',
                 did: docId,
                 imageUrl: imageUrl,
+                status: status,
+                isCancelled: isCancelled,
+                eventDateText: eventDateStr,
+                endDateText: showEndDate ? endDateStr : '',
               ),
             ),
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(20),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(28),
@@ -317,158 +361,146 @@ class _EventsPageState extends ConsumerState<EventsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // White circle icon box
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0x0F000000),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: imageUrl.isNotEmpty
+              // ---- Poster image with overlaid info ----
+              SizedBox(
+                height: 150,
+                width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // image / fallback
+                    imageUrl.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFF111111),
+                            placeholder: (context, url) => Container(
+                              color: Colors.white.withOpacity(0.6),
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    color: Color(0xFF111111),
+                                  ),
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.broken_image_rounded,
-                              size: 20,
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.white.withOpacity(0.6),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.broken_image_rounded,
+                                  size: 30,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
                             ),
                           )
-                        : const Icon(
-                            Icons.bolt,
-                            color: Color(0xFF111111),
-                            size: 24,
+                        : Container(
+                            color: Colors.white.withOpacity(0.6),
+                            child: const Center(
+                              child: Icon(
+                                Icons.bolt,
+                                color: Color(0xFF111111),
+                                size: 34,
+                              ),
+                            ),
                           ),
-                  ),
-                  const SizedBox(width: 16),
 
-                  // Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          eventName,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF111111),
-                            letterSpacing: -0.4,
-                            height: 1.25,
+                    // bottom gradient scrim so name/status stay readable
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(12, 26, 12, 10),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Color(0xCC000000)],
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          eventVenue,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Segmented progress indicator row
-              Row(
-                children: List.generate(totalSegments, (idx) {
-                  final isFilled = idx < usedSegments;
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: isFilled
-                            ? const Color(0xFF7C4DFF).withOpacity(0.4)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: isFilled
-                              ? Colors.transparent
-                              : const Color(0xFFD1D5DB),
-                          style: isFilled
-                              ? BorderStyle.none
-                              : BorderStyle.solid,
-                          width: 1.5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              eventName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isCancelled
+                                        ? const Color(0xFFEF4444)
+                                        : _statusColor(status),
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  isCancelled ? 'Cancelled' : status,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 20),
 
-              // Bottom controls row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // // Outline Capacity label badge
-                  // Container(
-                  //   padding: const EdgeInsets.symmetric(
-                  //     horizontal: 12,
-                  //     vertical: 6,
-                  //   ),
-                  //   decoration: BoxDecoration(
-                  //     borderRadius: BorderRadius.circular(16),
-                  //     border: Border.all(
-                  //       color: const Color(0xFFD1D5DB),
-                  //       width: 1.5,
-                  //     ),
-                  //   ),
-                  //   child: Text(
-                  //     'Used ${usedSegments * 100} / 800',
-                  //     style: const TextStyle(
-                  //       fontSize: 11.5,
-                  //       fontWeight: FontWeight.w800,
-                  //       color: Color(0xFF475569),
-                  //     ),
-                  //   ),
-                  // ),
-
-                  // Trigger Button Details
-                  Row(
-                    children: [
-                      if (role == 'admin') ...[
-                        IconButton(
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFFEF4444),
-                            shape: const CircleBorder(),
-                            side: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1.5,
-                            ),
+                    // category chip
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF111111),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          category.isEmpty
+                              ? 'General'
+                              : category[0].toUpperCase() +
+                                    category.substring(1),
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
                           ),
-                          onPressed: () {
+                        ),
+                      ),
+                    ),
+
+                    // delete button (admin only)
+                    if (role == 'admin')
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
                             showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
@@ -493,68 +525,71 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                               ),
                             );
                           },
-                          icon: const Icon(
-                            Icons.delete_outline_rounded,
-                            size: 18,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 16,
+                              color: Color(0xFFEF4444),
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                      ],
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //         builder: (context) => EventDetailPage(
-                      //           name: eventName,
-                      //           eventId: data["eventId"] ?? '',
-                      //           venue: eventVenue,
-                      //           description: data["description"] ?? '',
-                      //           did: docId,
-                      //           imageUrl: imageUrl,
-                      //         ),
-                      //       ),
-                      //     );
-                      //   },
-                      //   child: Container(
-                      //     padding: const EdgeInsets.symmetric(
-                      //       horizontal: 16,
-                      //       vertical: 10,
-                      //     ),
-                      //     decoration: BoxDecoration(
-                      //       borderRadius: BorderRadius.circular(20),
-                      //       color: Colors.white,
-                      //       boxShadow: const [
-                      //         BoxShadow(
-                      //           color: Color(0x0A000000),
-                      //           blurRadius: 8,
-                      //           offset: Offset(0, 4),
-                      //         ),
-                      //       ],
-                      //     ),
-                      //     child: const Row(
-                      //       children: [
-                      //         Text(
-                      //           'Start',
-                      //           style: TextStyle(
-                      //             fontSize: 13,
-                      //             fontWeight: FontWeight.w800,
-                      //             color: Color(0xFF111111),
-                      //           ),
-                      //         ),
-                      //         SizedBox(width: 6),
-                      //         Icon(
-                      //           Icons.play_arrow_rounded,
-                      //           size: 14,
-                      //           color: Color(0xFF111111),
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                ],
+                      ),
+                  ],
+                ),
+              ),
+
+              // ---- Venue + date, single compact row ----
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.place_outlined,
+                      size: 14,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        eventVenue,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 13,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        showEndDate
+                            ? '$eventDateStr → $endDateStr'
+                            : eventDateStr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

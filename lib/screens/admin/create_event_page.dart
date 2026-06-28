@@ -53,46 +53,57 @@ class _CreateEventPageState extends State<CreateEventPage> {
     });
   }
 
+  Future<DateTime> startDate() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2035),
+      initialDate: DateTime.now(),
+    );
+
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    final eventDateTime = DateTime(
+      selectedDate!.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime!.hour,
+      selectedTime.minute,
+    );
+    return eventDateTime;
+  }
+
+  Future<DateTime> endDate() async {
+    final selectedEndDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2035),
+      initialDate: DateTime.now(),
+    );
+
+    final selectedEndTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    final endDateTime = DateTime(
+      selectedEndDate!.year,
+      selectedEndDate.month,
+      selectedEndDate.day,
+      selectedEndTime!.hour,
+      selectedEndTime.minute,
+    );
+
+    return endDateTime;
+  }
+
+  DateTime? sdt;
+  DateTime? edt;
   Future<void> createEvent() async {
     try {
-      final selectedDate = await showDatePicker(
-        context: context,
-        firstDate: DateTime.now(),
-        lastDate: DateTime(2035),
-        initialDate: DateTime.now(),
-      );
-
-      final selectedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
-      final eventDateTime = DateTime(
-        selectedDate!.year,
-        selectedDate.month,
-        selectedDate.day,
-        selectedTime!.hour,
-        selectedTime.minute,
-      );
-      final selectedEndDate = await showDatePicker(
-        context: context,
-        firstDate: DateTime.now(),
-        lastDate: DateTime(2035),
-        initialDate: DateTime.now(),
-      );
-
-      final selectedEndTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
-      final endDateTime = DateTime(
-        selectedEndDate!.year,
-        selectedEndDate.month,
-        selectedEndDate.day,
-        selectedEndTime!.hour,
-        selectedEndTime.minute,
-      );
       await FirestoreService().createEvent(
         EventModel(
           eventId: uid,
@@ -101,13 +112,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
           venue: _controller3.text.trim(),
           category: _controller4.text.trim(),
           imageUrl: img,
-          eventDate: eventDateTime,
-          endDate: endDateTime,
+          eventDate: sdt!,
+          endDate: edt!,
           isCancelled: false,
         ),
       );
-      print(eventDateTime);
-      print(endDateTime);
       if (context.mounted) {
         const snackbar = SnackBar(content: Text('Event Created'));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
@@ -237,7 +246,28 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 ),
               ),
               const SizedBox(height: 32),
-
+              //Date buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: ()  {
+                      setState(() async{
+                        final t = await startDate();
+                        sdt =   t;
+                      });
+                    },
+                    child: Text('Start Date'),
+                  ),
+                  ElevatedButton(onPressed: () {
+                    setState(() async{
+                        final t = await endDate();
+                        edt =   t;
+                      });
+                  }, child: Text('End Date')),
+                ],
+              ),
+              const SizedBox(height: 32),
               // Submit Button
               ElevatedButton(
                 style: ElevatedButton.styleFrom(

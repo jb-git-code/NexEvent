@@ -135,9 +135,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const QRScannerPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const QRScannerPage()),
                   );
                 },
                 icon: const Icon(Icons.qr_code_rounded),
@@ -202,14 +200,14 @@ class _HomePageState extends ConsumerState<HomePage> {
         },
         items: const [
           BottomNavigationBarItem(
-            label: 'Explore',
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore),
+            label: 'Events',
+            icon: Icon(Icons.event),
+            activeIcon: Icon(Icons.event_available),
           ),
           BottomNavigationBarItem(
-            label: 'My Tickets',
-            icon: Icon(Icons.confirmation_number_outlined),
-            activeIcon: Icon(Icons.confirmation_number),
+            label: 'Explore',
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore_outlined),
           ),
           BottomNavigationBarItem(
             label: 'News',
