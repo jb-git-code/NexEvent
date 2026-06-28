@@ -10,6 +10,10 @@ class AuthService {
     required String email,
     required String password,
     required String role,
+    required String roll,
+    required String batch,
+    required String branch,
+    required String tag,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -23,6 +27,11 @@ class AuthService {
       "email": email,
 
       "role": role,
+
+      "roll": roll,
+      "batch": batch,
+      "branch": branch,
+      "tag": tag,
     });
   }
 
@@ -39,7 +48,7 @@ class AuthService {
   Future<void> logout() async {
     print("Logout clicked");
     await _auth.signOut();
-    
+
     print("Logout done");
   }
 }

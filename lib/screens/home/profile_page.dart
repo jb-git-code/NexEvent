@@ -17,10 +17,15 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   bool uploaded = false;
+  String role = '';
 
   @override
   void initState() {
     super.initState();
+    final User = ref.read(currentUserProvider);
+    setState(() {
+      role = User!.role;
+    });
   }
 
   @override
@@ -29,10 +34,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final currUser = ref.watch(currentUserProvider);
     final userEmail = currUser!.email ?? 'No Email';
-    final role = currUser.role;
+
     final initial = userEmail.isNotEmpty ? userEmail[0].toUpperCase() : 'U';
-    print('User => $userEmail');
-    print('Role => $role');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),

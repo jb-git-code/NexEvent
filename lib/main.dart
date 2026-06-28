@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/firebase_options.dart';
 import 'package:nexevent/screens/auth/auth_gate.dart';
+import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/services/notification_service.dart';
 
 void main() async {
