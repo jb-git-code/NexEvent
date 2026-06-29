@@ -1,19 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/models/registration_model.dart';
+import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/saved_events.dart';
 import 'package:nexevent/screens/home/user_registrations.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/widgets/grid_background.dart';
 
-class MyEventsPage extends StatefulWidget {
+class MyEventsPage extends ConsumerStatefulWidget {
   const MyEventsPage({super.key});
 
   @override
-  State<MyEventsPage> createState() => _MyEventsPageState();
+  ConsumerState<MyEventsPage> createState() => _MyEventsPageState();
 }
 
-class _MyEventsPageState extends State<MyEventsPage> {
+class _MyEventsPageState extends ConsumerState<MyEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,128 +45,6 @@ class _MyEventsPageState extends State<MyEventsPage> {
                 ),
                 physics: const BouncingScrollPhysics(),
                 children: [
-                  // // 2. Statistics Title & Year Selector Pill
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     const Text(
-                  //       'Statistics',
-                  //       style: TextStyle(
-                  //         fontSize: 26,
-                  //         fontWeight: FontWeight.w900,
-                  //         color: Color(0xFF111111),
-                  //         letterSpacing: -0.6,
-                  //       ),
-                  //     ),
-                  //     Container(
-                  //       padding: const EdgeInsets.symmetric(
-                  //         horizontal: 12,
-                  //         vertical: 6,
-                  //       ),
-                  //       decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(16),
-                  //         border: Border.all(
-                  //           color: const Color(0xFFE2E8F0),
-                  //           width: 1.5,
-                  //         ),
-                  //         color: Colors.white,
-                  //       ),
-                  //       child: const Row(
-                  //         children: [
-                  //           Text(
-                  //             '2026',
-                  //             style: TextStyle(
-                  //               fontSize: 13,
-                  //               fontWeight: FontWeight.w800,
-                  //               color: Color(0xFF111111),
-                  //             ),
-                  //           ),
-                  //           SizedBox(width: 4),
-                  //           Icon(
-                  //             Icons.keyboard_arrow_down_rounded,
-                  //             size: 16,
-                  //             color: Color(0xFF111111),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 20),
-
-                  // 3. Static Decorative Chart Aesthetic Cards
-                  // Container(
-                  //   padding: const EdgeInsets.all(20),
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.white,
-                  //     borderRadius: BorderRadius.circular(28),
-                  //     border: Border.all(
-                  //       color: const Color(0xFFEFF1F4),
-                  //       width: 1.5,
-                  //     ),
-                  //   ),
-                  //   child: Column(
-                  //     children: [
-                  //       // Stacked layout replicating columns from the image
-                  //       SizedBox(
-                  //         height: 220,
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  //           crossAxisAlignment: CrossAxisAlignment.end,
-                  //           children: [
-                  //             _buildChartColumn('27 Jun', [
-                  //               _buildChartPill(50, const Color(0xFFB3C5D7)),
-                  //               _buildChartPill(70, const Color(0xFFFFF1F2)),
-                  //               _buildChartPillOutline(40),
-                  //             ]),
-                  //             _buildChartColumn('28 Jun', [
-                  //               _buildChartPill(40, const Color(0xFFB3C5D7)),
-                  //               _buildChartPill(50, const Color(0xFFFFF1F2)),
-                  //               _buildChartPillOutline(60),
-                  //             ]),
-                  //             _buildChartColumn('29 Jun', [
-                  //               _buildChartPill(
-                  //                 60,
-                  //                 const Color(0xFFB3C5D7),
-                  //                 badgeText: '37%',
-                  //               ),
-                  //               _buildChartPill(
-                  //                 40,
-                  //                 const Color(0xFFFFF1F2),
-                  //                 badgeText: '87%',
-                  //               ),
-                  //               _buildChartPillOutline(50),
-                  //             ]),
-                  //             _buildChartColumn('30 Jun', [
-                  //               _buildChartPill(50, const Color(0xFFB3C5D7)),
-                  //               _buildChartPill(60, const Color(0xFFFFF1F2)),
-                  //               _buildChartPillOutline(40),
-                  //             ]),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //       const SizedBox(height: 20),
-
-                  //       // Legend dots
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.center,
-                  //         children: [
-                  //           _buildLegendItem(
-                  //             const Color(0xFFB3C5D7),
-                  //             'Registered',
-                  //           ),
-                  //           const SizedBox(width: 24),
-                  //           _buildLegendItem(
-                  //             const Color(0xFFFFF1F2),
-                  //             'Attended',
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 28),
-
                   // 4. Recommended Section
                   const Text(
                     'Recommended for you',
@@ -291,11 +172,18 @@ class _MyEventsPageState extends State<MyEventsPage> {
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: GestureDetector(
                               onTap: () {
+                                ref
+                                    .read(currentRegProvider.notifier)
+                                    .setUser(
+                                      RegistrationModel.fromMap(regData),
+                                    );
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        UserRegistrations(evId: regId),
+                                    builder: (context) => UserRegistrations(
+                                      evId: regId,
+                                      // map: regData,
+                                    ),
                                   ),
                                 );
                               },
@@ -331,7 +219,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            eventVenue,
+                                            'tap to reveal pass',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(

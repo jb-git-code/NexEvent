@@ -27,7 +27,7 @@ class _EventsPageState extends ConsumerState<EventsPage> {
   Widget build(BuildContext context) {
     final currUser = ref.watch(currentUserProvider);
     // final role = currUser?.role ?? 'student';
-    final role = 'admin';
+    // final role = 'admin';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -208,7 +208,7 @@ class _EventsPageState extends ConsumerState<EventsPage> {
                         data,
                         cardBg,
                         status,
-                        role,
+                        currUser!.role,
                       );
                     }),
                 ],

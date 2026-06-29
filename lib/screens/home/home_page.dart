@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/auth_state_provider.dart';
+import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/admin/announcement_page.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
@@ -48,7 +49,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final user = UserModel.fromMap(doc.data()!);
 
     ref.read(currentUserProvider.notifier).setUser(user);
-
+   
     if (mounted) {
       setState(() {
         isLoading = false;

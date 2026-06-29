@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/models/registration_model.dart';
+import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:nexevent/widgets/grid_background.dart';
@@ -8,7 +11,9 @@ import 'package:nexevent/widgets/grid_background.dart';
 class UserRegistrations extends ConsumerStatefulWidget {
   const UserRegistrations({super.key, required this.evId});
 
-  final String evId; // This is the registrationId
+  final String evId;
+  // final Map<String, dynamic> map;
+  // This is the registrationId
 
   @override
   ConsumerState<UserRegistrations> createState() => _UserRegistrationsState();
@@ -16,9 +21,21 @@ class UserRegistrations extends ConsumerStatefulWidget {
 
 class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
-
+    final reg = ref.watch(currentRegProvider);
+    final attd = reg!.attented;
+    final usd = reg.userId;
+    final rid = reg.registrationId;
+    print('Attnd -> $attd');
+    print('User -> $usd');
+    print('Regid -> $rid');
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -37,8 +54,11 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.all(28.0),
-              child: FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('registrations').doc(widget.evId).get(),
+              child: StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('registrations')
+                    .doc(widget.evId)
+                    .snapshots(),
                 builder: (context, regSnapshot) {
                   if (regSnapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator(strokeWidth: 2.4);
@@ -46,20 +66,30 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                   if (!regSnapshot.hasData || !regSnapshot.data!.exists) {
                     return const Text("Registration data not found.");
                   }
-                  final regMap = regSnapshot.data!.data() as Map<String, dynamic>;
+                  final regMap =
+                      regSnapshot.data!.data() as Map<String, dynamic>;
                   final eventId = regMap["eventId"] ?? '';
-                  final isAttended = regMap["attented"] ?? false;
+                  final isAttended = regMap["attended"] ?? false;
+                  print('event id -> $eventId');
+                  print('Att -> $isAttended');
 
                   return FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance.collection('events').doc(eventId).get(),
+                    future: FirebaseFirestore.instance
+                        .collection('events')
+                        .doc(eventId)
+                        .get(),
                     builder: (context, evSnapshot) {
-                      if (evSnapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator(strokeWidth: 2.4);
+                      if (evSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                        );
                       }
                       if (!evSnapshot.hasData || !evSnapshot.data!.exists) {
                         return const Text("Event details not found.");
                       }
-                      final evMap = evSnapshot.data!.data() as Map<String, dynamic>;
+                      final evMap =
+                          evSnapshot.data!.data() as Map<String, dynamic>;
                       final eventName = evMap["name"] ?? 'Untitled Event';
                       final eventVenue = evMap["venue"] ?? 'TBD';
 
@@ -70,7 +100,10 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFEEF2FF), // Soft lavender blue
                           borderRadius: BorderRadius.circular(32),
-                          border: Border.all(color: Colors.black.withOpacity(0.04), width: 1.5),
+                          border: Border.all(
+                            color: Colors.black.withOpacity(0.04),
+                            width: 1.5,
+                          ),
                           boxShadow: const [
                             BoxShadow(
                               color: Color(0x0A000000),
@@ -87,18 +120,121 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  // padding: const EdgeInsets.symmetric(
+                                  //   horizontal: 12,
+                                  //   vertical: 6,
+                                  // ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF111111),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: Text(
-                                    isAttended ? 'ATTENDED' : 'ACTIVE PASS',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 900),
+                                    curve: Curves.easeInOutCubicEmphasized,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: isAttended
+                                            ? const [
+                                                Color(0xFF22C55E),
+                                                Color(0xFF15803D),
+                                              ]
+                                            : const [
+                                                Color(0xFF2A2A2A),
+                                                Color(0xFF0A0A0A),
+                                              ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.08),
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: isAttended
+                                              ? const Color(
+                                                  0xFF16A34A,
+                                                ).withOpacity(0.35)
+                                              : Colors.black.withOpacity(0.25),
+                                          blurRadius: 14,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(
+                                        milliseconds: 500,
+                                      ),
+                                      switchInCurve: Curves.easeOutCubic,
+                                      switchOutCurve: Curves.easeInCubic,
+                                      transitionBuilder: (child, animation) {
+                                        return FadeTransition(
+                                          opacity: animation,
+                                          child: ScaleTransition(
+                                            scale: Tween(
+                                              begin: 0.9,
+                                              end: 1.0,
+                                            ).animate(animation),
+                                            child: child,
+                                          ),
+                                        );
+                                      },
+                                      child: Row(
+                                        key: ValueKey(isAttended),
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (isAttended)
+                                            const Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                )
+                                                .animate()
+                                                .scale(
+                                                  begin: const Offset(0.4, 0.4),
+                                                  end: const Offset(1, 1),
+                                                  duration: 450.ms,
+                                                  curve: Curves.easeOutBack,
+                                                )
+                                                .fadeIn(duration: 300.ms)
+                                          else
+                                            Container(
+                                                  width: 6,
+                                                  height: 6,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        color: Colors.white,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                )
+                                                .animate(
+                                                  onPlay: (c) =>
+                                                      c.repeat(reverse: true),
+                                                )
+                                                .fade(
+                                                  begin: 0.35,
+                                                  end: 1.0,
+                                                  duration: 900.ms,
+                                                  curve: Curves.easeInOut,
+                                                ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            isAttended
+                                                ? "ATTENDED"
+                                                : "ACTIVE PASS",
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.8,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -109,7 +245,11 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                   ),
-                                  child: const Icon(Icons.qr_code_2_rounded, size: 18, color: Color(0xFF111111)),
+                                  child: const Icon(
+                                    Icons.qr_code_2_rounded,
+                                    size: 18,
+                                    color: Color(0xFF111111),
+                                  ),
                                 ),
                               ],
                             ),
@@ -144,7 +284,9 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                               children: List.generate(15, (index) {
                                 return Expanded(
                                   child: Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4.0,
+                                    ),
                                     height: 1.5,
                                     color: const Color(0xFFCBD5E1),
                                   ),
@@ -159,7 +301,10 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                  width: 1.5,
+                                ),
                               ),
                               child: QrImageView(
                                 size: 180,
@@ -181,7 +326,11 @@ class _UserRegistrationsState extends ConsumerState<UserRegistrations> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.person_outline_rounded, size: 14, color: Color(0xFF64748B)),
+                                const Icon(
+                                  Icons.person_outline_rounded,
+                                  size: 14,
+                                  color: Color(0xFF64748B),
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   currentUser?.name ?? 'User Pass',

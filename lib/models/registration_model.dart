@@ -17,6 +17,7 @@ class RegistrationModel {
       eventId: map["eventId"] ?? "",
       userId: map["userId"] ?? "",
       attented: false,
+      
     );
   }
 
@@ -25,7 +26,7 @@ class RegistrationModel {
       "registrationId": registrationId,
       "eventId": eventId,
       "userId": userId,
-      "registeredAt": DateTime.now(),
+      // "registeredAt": DateTime.now(),
       "attended": false,
     };
   }
