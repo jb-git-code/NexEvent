@@ -10,6 +10,7 @@ import 'package:nexevent/screens/admin/announcement_page.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/auth/scanner_page.dart';
+import 'package:nexevent/screens/community/college_feed.dart';
 import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
@@ -49,7 +50,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final user = UserModel.fromMap(doc.data()!);
 
     ref.read(currentUserProvider.notifier).setUser(user);
-   
+
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -67,6 +68,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<Widget> pages = [
     EventsPage(),
     MyEventsPage(),
+    CollegeFeed(),
     AllAnnouncements(),
     ProfilePage(),
   ];
@@ -209,6 +211,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             label: 'Explore',
             icon: Icon(Icons.explore_outlined),
             activeIcon: Icon(Icons.explore_outlined),
+          ),
+          BottomNavigationBarItem(
+            label: 'Feed',
+            icon: Icon(Icons.feed_outlined),
+            activeIcon: Icon(Icons.feed_rounded),
           ),
           BottomNavigationBarItem(
             label: 'News',
