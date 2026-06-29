@@ -49,6 +49,8 @@ class _AnnouncementDetailPageState
           "userName": user!.name, // later currentUser.name
           "userId": user.uid, // later currentUser.uid
           "comment": commentController.text.trim(),
+          "branch": user.branch,
+          "batch": user.batch,
           "createdAt": Timestamp.now(),
         });
 
@@ -197,56 +199,141 @@ class _AnnouncementDetailPageState
                 }
 
                 return ListView.builder(
+                  padding: const EdgeInsets.all(12),
                   itemCount: docs.length,
-
                   itemBuilder: (context, index) {
                     final data = docs[index].data();
 
-                    return ListTile(
-                      title: Text(data["userName"]),
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  child: Text(
+                                    data["userName"][0].toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
 
-                      subtitle: Text(data["comment"]),
-                      trailing: data["userId"] == currentUser!.uid
-                          ? IconButton(
-                              icon: const Icon(Icons.delete),
+                                const SizedBox(width: 10),
 
-                              onPressed: () async {
-
-                                showDialog(
-                                  context: context,
-
-                                  builder: (_) => AlertDialog(
-                                    title: const Text("Delete Comment?"),
-
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-
-                                        child: const Text("Cancel"),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        data["userName"],
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
                                       ),
-
-                                      TextButton(
-                                        onPressed: () async {
-                                          await FirebaseFirestore.instance
-                                              .collection("announcements")
-                                              .doc(widget.announcementId)
-                                              .collection("comments")
-                                              .doc(data["id"])
-                                              .delete();
-
-                                          Navigator.pop(context);
-                                        },
-
-                                        child: const Text("Delete"),
+                                      Text(
+                                        "${data["branch"]} • ${data["batch"]}",
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 11,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                );
-                              },
-                            )
-                          : null,
+                                ),
+
+                                if (data["userId"] == currentUser!.uid ||
+                                    currentUser.role == "admin")
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: IconButton(
+                                      constraints: const BoxConstraints(),
+                                      padding: EdgeInsets.zero,
+                                      splashRadius: 18,
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: Colors.red,
+                                        size: 20,
+                                      ),
+                                      onPressed: () async {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => AlertDialog(
+                                            title: const Text(
+                                              "Delete Comment?",
+                                            ),
+                                            content: const Text(
+                                              "Are you sure you want to permanently delete this comment?",
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: const Text("Cancel"),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection(
+                                                        "announcements",
+                                                      )
+                                                      .doc(
+                                                        widget.announcementId,
+                                                      )
+                                                      .collection("comments")
+                                                      .doc(data["id"])
+                                                      .delete();
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text("Delete"),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        // Navigator.pop(context);
+                                      },
+                                    ),
+                                  ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Text(
+                              data["comment"],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );
