@@ -82,20 +82,36 @@ class FirestoreService {
   }
 
   String getStatus(EventModel event) {
-  final now = DateTime.now();
+    final now = DateTime.now();
 
-  if (event.isCancelled) {
-    return "Cancelled";
+    if (event.isCancelled) {
+      return "Cancelled";
+    }
+
+    if (now.isBefore(event.eventDate)) {
+      return "Upcoming";
+    }
+
+    if (now.isAfter(event.endDate)) {
+      return "Completed";
+    }
+
+    return "Live";
   }
 
-  if (now.isBefore(event.eventDate)) {
-    return "Upcoming";
+  Future<void> likePost(String postId, String uid) async {
+    final postRef = FirebaseFirestore.instance.collection("posts").doc(postId);
+
+    await postRef.collection("likes").doc(uid).set({
+      "likedAt": Timestamp.now(),
+    });
+    await postRef.update({"likeCount": FieldValue.increment(1)});
   }
 
-  if (now.isAfter(event.endDate)) {
-    return "Completed";
-  }
+  Future<void> unlikePost(String postId, String uid) async {
+    final postRef = FirebaseFirestore.instance.collection("posts").doc(postId);
 
-  return "Live";
-}
+    await postRef.collection("likes").doc(uid).delete();
+    await postRef.update({"likeCount": FieldValue.increment(-1)});
+  }
 }
