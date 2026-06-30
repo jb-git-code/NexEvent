@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/providers/user_provider.dart';
@@ -150,14 +151,16 @@ class _CollegeFeedState extends State<CollegeFeed> {
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final postData = documents[index].data() as Map<String, dynamic>;
+              final postId = postData["postId"] as String;
               return _PostCard(
+                key: ValueKey(postId), // <-- prevents State mismatch on rebuild
                 userName: postData["userName"] ?? 'Anonymous',
                 caption: postData["caption"] ?? '',
                 imageUrl: postData["imageUrl"] ?? '',
                 likeCount: postData["likeCount"] ?? 0,
                 commentCount: postData["commentCount"] ?? 0,
                 timeAgo: _timeAgo(postData["createdAt"]),
-                postId: postData["postId"],
+                postId: postId,
               );
             },
           );
@@ -169,6 +172,7 @@ class _CollegeFeedState extends State<CollegeFeed> {
 
 class _PostCard extends ConsumerStatefulWidget {
   const _PostCard({
+    super.key,
     required this.userName,
     required this.caption,
     required this.imageUrl,
@@ -191,17 +195,22 @@ class _PostCard extends ConsumerStatefulWidget {
 }
 
 class _PostCardState extends ConsumerState<_PostCard> {
-  bool isLiked = false;
+  Future<void> toggleLike(String postId, String uid) async {
+    final postRef = FirebaseFirestore.instance.collection("posts").doc(postId);
+    final likeRef = postRef.collection("likes").doc(uid);
 
-  Future<void> toggleLike(bool like, String postId) async {
-    final user = ref.watch(currentUserProvider);
-    if (like) {
-      await FirestoreService().unlikePost(postId, user!.uid);
-    } else {
-      await FirestoreService().likePost(postId, user!.uid);
-    }
-    setState(() {
-      isLiked = !isLiked;
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final likeSnap = await tx.get(likeRef);
+
+      if (likeSnap.exists) {
+        // already liked -> unlike
+        tx.delete(likeRef);
+        tx.update(postRef, {"likeCount": FieldValue.increment(-1)});
+      } else {
+        // not liked yet -> like
+        tx.set(likeRef, {"likedAt": Timestamp.now()});
+        tx.update(postRef, {"likeCount": FieldValue.increment(1)});
+      }
     });
   }
 
@@ -212,6 +221,9 @@ class _PostCardState extends ConsumerState<_PostCard> {
     final initial = widget.userName.isNotEmpty
         ? widget.userName[0].toUpperCase()
         : 'U';
+
+    final currentUser = ref.watch(currentUserProvider);
+    final uid = currentUser?.uid ?? FirebaseAuth.instance.currentUser?.uid;
 
     return Container(
       decoration: BoxDecoration(
@@ -293,9 +305,9 @@ class _PostCardState extends ConsumerState<_PostCard> {
             AspectRatio(
               aspectRatio: 4 / 3,
               child: GestureDetector(
-                onDoubleTap: () async {
-                  await toggleLike(isLiked, widget.postId);
-                },
+                onDoubleTap: uid == null
+                    ? null
+                    : () => toggleLike(widget.postId, uid),
                 child: CachedNetworkImage(
                   imageUrl: widget.imageUrl,
                   fit: BoxFit.cover,
@@ -346,23 +358,37 @@ class _PostCardState extends ConsumerState<_PostCard> {
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () async {
-                    await toggleLike(isLiked, widget.postId);
-                  },
-                  child: Icon(
-                    (!isLiked)
-                        ? Icons.favorite_border
-                        : Icons.favorite_outlined,
+                // ---- Like button: state is derived live from Firestore ----
+                if (uid == null)
+                  const Icon(
+                    Icons.favorite_border,
                     size: 24,
-                    color: const Color.fromARGB(
-                      255,
-                      239,
-                      14,
-                      14,
-                    ).withOpacity(widget.likeCount > 0 ? 1 : 0.45),
+                    color: Color(0xFF94A3B8),
+                  )
+                else
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('posts')
+                        .doc(widget.postId)
+                        .collection('likes')
+                        .doc(uid)
+                        .snapshots(),
+                    builder: (context, likeSnap) {
+                      final isLiked = likeSnap.data?.exists ?? false;
+                      return GestureDetector(
+                        onTap: () => toggleLike(widget.postId, uid),
+                        child: Icon(
+                          isLiked
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border,
+                          size: 24,
+                          color: isLiked
+                              ? const Color(0xFFEF0E0E)
+                              : const Color(0xFF94A3B8),
+                        ),
+                      );
+                    },
                   ),
-                ),
                 const SizedBox(width: 5),
                 Text(
                   '${widget.likeCount}',
@@ -376,16 +402,16 @@ class _PostCardState extends ConsumerState<_PostCard> {
                 GestureDetector(
                   onTap: () => showModalBottomSheet(
                     context: context,
-                    isScrollControlled:
-                        true, // important — taaki keyboard ke saath sheet expand ho
-                    shape: RoundedRectangleBorder(
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(24),
                       ),
                     ),
                     builder: (context) => CommentSheet(postId: widget.postId),
                   ),
-                  child: Icon(Icons.chat_bubble_rounded),
+                  child: const Icon(Icons.chat_bubble_rounded),
                 ),
                 const SizedBox(width: 5),
                 Text(
