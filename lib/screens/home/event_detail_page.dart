@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/models/event_model.dart';
 import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
@@ -42,6 +43,51 @@ class EventDetailPage extends StatefulWidget {
 class _EventDetailPageState extends State<EventDetailPage> {
   String role = "student";
   bool isLoading = true;
+
+  DateTime? parseFormattedDate(String dateString) {
+    try {
+      const months = {
+        'Jan': 1,
+        'Feb': 2,
+        'Mar': 3,
+        'Apr': 4,
+        'May': 5,
+        'Jun': 6,
+        'Jul': 7,
+        'Aug': 8,
+        'Sep': 9,
+        'Oct': 10,
+        'Nov': 11,
+        'Dec': 12,
+      };
+
+      final parts = dateString.split(' • ');
+      if (parts.length != 2) return null;
+
+      // Date Part
+      final dateParts = parts[0].split(' ');
+      final month = months[dateParts[0]]!;
+      final day = int.parse(dateParts[1].replaceAll(',', ''));
+      final year = int.parse(dateParts[2]);
+
+      // Time Part
+      final timeParts = parts[1].split(' ');
+      final hm = timeParts[0].split(':');
+      int hour = int.parse(hm[0]);
+      final minute = int.parse(hm[1]);
+      final period = timeParts[1];
+
+      if (period == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (period == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      return DateTime(year, month, day, hour, minute);
+    } catch (e) {
+      return null;
+    }
+  }
 
   Future<void> loadRole() async {
     try {
@@ -320,8 +366,28 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          EditEventPage(docId: widget.did),
+                                      builder: (context) => EditEventPage(
+                                        docId: widget.did,
+                                        map: EventModel(
+                                          eventId: widget.eventId,
+                                          name: widget.name,
+                                          description: widget.description,
+                                          venue: widget.venue,
+                                          category: 'event',
+                                          imageUrl: widget.imageUrl,
+                                          eventDate:
+                                              parseFormattedDate(
+                                                widget.eventDateText,
+                                              ) ??
+                                              DateTime.now(),
+                                          endDate:
+                                              parseFormattedDate(
+                                                widget.endDateText,
+                                              ) ??
+                                              DateTime.now(),
+                                          isCancelled: false,
+                                        ).toMap(),
+                                      ),
                                     ),
                                   );
                                 },

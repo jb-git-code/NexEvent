@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nexevent/models/event_model.dart';
@@ -6,9 +7,11 @@ import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/storage_services.dart';
 
 class EditEventPage extends StatefulWidget {
-  const EditEventPage({super.key, required this.docId});
+  const EditEventPage({super.key, required this.docId, required this.map});
 
   final String docId;
+
+  final Map<String, dynamic> map;
 
   @override
   State<EditEventPage> createState() => _EditEventPageState();
@@ -19,6 +22,8 @@ class _EditEventPageState extends State<EditEventPage> {
   final TextEditingController _controller2 = TextEditingController();
   final TextEditingController _controller3 = TextEditingController();
   final TextEditingController _controller4 = TextEditingController();
+  DateTime? edt;
+  DateTime? sdt;
 
   bool isUploading = true;
 
@@ -54,6 +59,52 @@ class _EditEventPageState extends State<EditEventPage> {
     setState(() {
       img = imageUrl;
     });
+  }
+
+  Future<DateTime> startDate() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2035),
+      initialDate: DateTime.now(),
+    );
+
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    final eventDateTime = DateTime(
+      selectedDate!.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime!.hour,
+      selectedTime.minute,
+    );
+    return eventDateTime;
+  }
+
+  Future<DateTime> endDate() async {
+    final selectedEndDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2035),
+      initialDate: DateTime.now(),
+    );
+
+    final selectedEndTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    final endDateTime = DateTime(
+      selectedEndDate!.year,
+      selectedEndDate.month,
+      selectedEndDate.day,
+      selectedEndTime!.hour,
+      selectedEndTime.minute,
+    );
+    return endDateTime;
   }
 
   @override
@@ -173,7 +224,30 @@ class _EditEventPageState extends State<EditEventPage> {
                 ),
               ),
               const SizedBox(height: 32),
-
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() async {
+                        final t = await startDate();
+                        sdt = t;
+                      });
+                    },
+                    child: Text('Start Date'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() async {
+                        final t = await endDate();
+                        edt = t;
+                      });
+                    },
+                    child: Text('End Date'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
               // Submit Button
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -184,55 +258,35 @@ class _EditEventPageState extends State<EditEventPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () async {
-                  final selectedDate = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2035),
-                    initialDate: DateTime.now(),
-                  );
-
-                  final selectedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-
-                  final eventDateTime = DateTime(
-                    selectedDate!.year,
-                    selectedDate.month,
-                    selectedDate.day,
-                    selectedTime!.hour,
-                    selectedTime.minute,
-                  );
-                  final selectedEndDate = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2035),
-                    initialDate: DateTime.now(),
-                  );
-
-                  final selectedEndTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-
-                  final endDateTime = DateTime(
-                    selectedEndDate!.year,
-                    selectedEndDate.month,
-                    selectedEndDate.day,
-                    selectedEndTime!.hour,
-                    selectedEndTime.minute,
-                  );
+                  final mpp = widget.map;
                   await FirestoreService().updateEvent(
                     EventModel(
                       eventId: widget.docId,
-                      name: _controller1.text.trim(),
-                      description: _controller2.text.trim(),
-                      venue: _controller3.text.trim(),
-                      category: _controller4.text.trim(),
-                      imageUrl: img,
-                      eventDate: eventDateTime,
-                      endDate: endDateTime,
-                      isCancelled: false,
+
+                      name: _controller1.text.trim().isEmpty
+                          ? mpp["name"]
+                          : _controller1.text.trim(),
+
+                      description: _controller2.text.trim().isEmpty
+                          ? mpp["description"]
+                          : _controller2.text.trim(),
+
+                      venue: _controller3.text.trim().isEmpty
+                          ? mpp["venue"]
+                          : _controller3.text.trim(),
+
+                      category: _controller4.text.trim().isEmpty
+                          ? mpp["category"]
+                          : _controller4.text.trim(),
+
+                      imageUrl: img.isEmpty ? mpp["imageUrl"] : img,
+
+                      eventDate:
+                          sdt ?? (mpp["eventDate"] as Timestamp).toDate(),
+
+                      endDate: edt ?? (mpp["endDate"] as Timestamp).toDate(),
+
+                      isCancelled: mpp["isCancelled"] ?? false,
                     ),
                     widget.docId,
                   );

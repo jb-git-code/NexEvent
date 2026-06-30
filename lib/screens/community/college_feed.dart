@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/community/comment_sheet.dart';
 import 'package:nexevent/screens/community/create_post.dart';
@@ -49,9 +50,24 @@ class _CollegeFeedState extends State<CollegeFeed> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'Community',
-          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Community',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+            ),
+            const SizedBox(width: 20),
+            Text(
+              DateFormat('EEEE, MMM d').format(DateTime.now()),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
