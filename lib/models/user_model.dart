@@ -9,6 +9,7 @@ class UserModel {
   final String tag;
   // final String profileImg;
   // final String createdAt
+  final List joinedChannels;
 
   UserModel({
     required this.uid,
@@ -19,6 +20,7 @@ class UserModel {
     required this.batch,
     required this.branch,
     required this.tag,
+    required this.joinedChannels,
   });
 
   Map<String, dynamic> toMap() {
@@ -30,7 +32,8 @@ class UserModel {
       "roll": roll,
       "batch": batch,
       "branch": branch,
-      "tag":tag,
+      "tag": tag,
+      "joinedChannels": joinedChannels,
     };
   }
 
@@ -44,6 +47,8 @@ class UserModel {
       batch: map["batch"],
       branch: map["branch"],
       tag: map["tag"],
+      joinedChannels:
+          (map["joinedChannels"] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/screens/community/community_page.dart';
+import 'package:nexevent/screens/home/channel_page.dart';
 import 'package:nexevent/screens/home/saved_events.dart';
 import 'package:nexevent/screens/home/user_registrations.dart';
 import 'package:nexevent/services/firestore_service.dart';
@@ -61,30 +62,23 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
                     children: [
                       Expanded(
                         child: _buildRecommendationCard(
-                          icon: Icons.chat_bubble_outline_rounded,
-                          title: 'Community',
+                          icon: Icons.create,
+                          title: 'Create',
                           color: const Color(0xFFFFF1F2),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AllAnnouncements(),
-                              ),
-                            );
-                          },
+                          onTap: () {},
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildRecommendationCard(
-                          icon: Icons.school_outlined,
-                          title: 'Saved',
+                          icon: Icons.wifi_channel,
+                          title: 'Channels',
                           color: const Color(0xFFECFDF5),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const SavedEvents(),
+                                builder: (context) => ChannelsPage(),
                               ),
                             );
                           },
