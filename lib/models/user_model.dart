@@ -51,4 +51,30 @@ class UserModel {
           (map["joinedChannels"] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
+
+  UserModel copyWith({
+    String? uid,
+    String? name,
+    String? email,
+    String? role,
+    String? roll,
+     String? batch,
+      String? branch,
+       String? tag,
+    List<String>? joinedChannels,
+    // baaki fields bhi add kar dena jo UserModel me hain
+  }) {
+    return UserModel(
+      uid: uid ?? this.uid,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      roll: roll ?? this.roll,
+      batch: batch ?? this.batch,
+      branch: branch ?? this.branch,
+      tag: tag ?? this.tag,
+      joinedChannels: joinedChannels ?? this.joinedChannels,
+      // baaki fields
+    );
+  }
 }

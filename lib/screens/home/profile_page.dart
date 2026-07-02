@@ -18,7 +18,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final primaryColor = Theme.of(context).primaryColor;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final currUser = ref.watch(currentUserProvider);
-    final userEmail = currUser!.email ?? 'No Email';
+    final userEmail = currUser!.email ;
 
     final initial = currUser.name.isNotEmpty
         ? currUser.name[0].toUpperCase()

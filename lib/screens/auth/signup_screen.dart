@@ -62,6 +62,8 @@ class _SignupScreenState extends State<SignupScreen> {
         tag: 'Default',
         roll: rollNumber,
       );
+
+      
     } on FirebaseAuthException catch (e) {
       final eSnackbar = SnackBar(content: Text(e.toString()));
       ScaffoldMessenger.of(context).showSnackBar(eSnackbar);

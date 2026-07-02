@@ -61,6 +61,14 @@ class NotificationService {
     importance: Importance.high,
   );
 
+  Future<void> subscribeToChannel(String channelId) async {
+    await FirebaseMessaging.instance.subscribeToTopic(channelId);
+  }
+
+  Future<void> unsubscribeFromChannel(String channelId) async {
+    await FirebaseMessaging.instance.unsubscribeFromTopic(channelId);
+  }
+
   Future<void> init() async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -78,10 +86,7 @@ class NotificationService {
         ?.createNotificationChannel(channel);
 
     await requestPermission();
-    await FirebaseMessaging.instance
-    .subscribeToTopic(
-      "announcements",
-    );
+
     listenForegroundMessages();
   }
 }

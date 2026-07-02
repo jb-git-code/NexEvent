@@ -105,6 +105,7 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('announcements')
+            // .where("channelId", isEqualTo: "photography_club")
             .orderBy("isPinned", descending: true)
             .orderBy("createdAt", descending: true)
             .snapshots(),

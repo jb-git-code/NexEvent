@@ -32,6 +32,7 @@ class AuthService {
       "batch": batch,
       "branch": branch,
       "tag": tag,
+      "joinedChannels": ["general"],
     });
   }
 

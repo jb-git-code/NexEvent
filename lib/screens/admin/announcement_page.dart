@@ -16,6 +16,13 @@ class AnnouncementPage extends ConsumerStatefulWidget {
 class _AnnouncementPageState extends ConsumerState<AnnouncementPage> {
   TextEditingController title = TextEditingController();
   TextEditingController content = TextEditingController();
+  String? selectedChannel;
+  Stream<QuerySnapshot<Map<String, dynamic>>> getChannels() {
+    return FirebaseFirestore.instance
+        .collection("channels")
+        .orderBy("name")
+        .snapshots();
+  }
 
   Future<void> createAnnouncement() async {
     final user = ref.read(currentUserProvider);
@@ -27,6 +34,7 @@ class _AnnouncementPageState extends ConsumerState<AnnouncementPage> {
       author: (user == null) ? 'admin' : user.name,
       createdAt: DateTime.now(),
       isPinned: false,
+      channelId: selectedChannel!,
     );
 
     try {
@@ -67,12 +75,61 @@ class _AnnouncementPageState extends ConsumerState<AnnouncementPage> {
                 ),
               ),
               const SizedBox(height: 20),
+              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection("channels")
+                    .orderBy("name")
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  final channels = snapshot.data!.docs;
+
+                  return DropdownButtonFormField<String>(
+                    value: selectedChannel,
+                    decoration: InputDecoration(
+                      labelText: "Select Channel",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    items: channels.map((doc) {
+                      final data = doc.data();
+
+                      return DropdownMenuItem<String>(
+                        value: data["channelId"],
+                        child: Text(data["name"]),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedChannel = value;
+                      });
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
               TextButton(
                 style: ButtonStyle(
                   foregroundColor: WidgetStatePropertyAll(Colors.white),
                   backgroundColor: WidgetStatePropertyAll(Colors.black),
                 ),
                 onPressed: () async {
+                  // if(title.tex == null || content.text ==null){
+                  //    ScaffoldMessenger.of(context).showSnackBar(
+                  //     const SnackBar(content: Text("Please select a channel")),
+                  //   );
+                  //   return;
+                  // }
+                  if (selectedChannel == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please select a channel")),
+                    );
+                    return;
+                  }
                   await createAnnouncement();
                 },
                 child: Text(
