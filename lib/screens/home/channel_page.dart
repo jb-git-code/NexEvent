@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexevent/models/channel_model.dart';
-import 'package:nexevent/providers/user_provider.dart';
-import 'package:nexevent/services/channel_service.dart';
 import 'package:nexevent/widgets/channel_card.dart';
 
 class ChannelsPage extends ConsumerStatefulWidget {
@@ -16,7 +13,6 @@ class ChannelsPage extends ConsumerStatefulWidget {
 class _ChannelsPageState extends ConsumerState<ChannelsPage> {
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider);
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FB),
       appBar: AppBar(
@@ -43,10 +39,6 @@ class _ChannelsPageState extends ConsumerState<ChannelsPage> {
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final channelData = docs[index].data();
-              final channel = ChannelModel.fromMap(channelData);
-              final joined = currentUser!.joinedChannels.contains(
-                channel.channelId,
-              );
               return ChannelCard(
                 name: channelData["name"],
                 description: channelData["description"],
@@ -56,23 +48,6 @@ class _ChannelsPageState extends ConsumerState<ChannelsPage> {
                 isMandatory: channelData["isMandatory"] ?? false,
                 key: ValueKey(channelData["channelId"]),
                 channelId: channelData["channelId"],
-                // onJoin: () async {
-                //   if (channel.isMandatory) return;
-
-                //   if (joined) {
-                //     await ChannelService().leaveChannel(
-                //       uid: currentUser.uid,
-
-                //       channelId: channel.channelId,
-                //     );
-                //   } else {
-                //     await ChannelService().joinChannel(
-                //       uid: currentUser.uid,
-
-                //       channelId: channel.channelId,
-                //     );
-                //   }
-                // },
               );
             },
           );

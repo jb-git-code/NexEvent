@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexevent/models/channel_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/services/channel_service.dart';
 import 'package:nexevent/services/notification_service.dart';

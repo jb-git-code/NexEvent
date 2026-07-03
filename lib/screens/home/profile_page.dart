@@ -18,7 +18,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final primaryColor = Theme.of(context).primaryColor;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final currUser = ref.watch(currentUserProvider);
-    final userEmail = currUser!.email ;
+    final userEmail = currUser!.email;
 
     final initial = currUser.name.isNotEmpty
         ? currUser.name[0].toUpperCase()
@@ -191,35 +191,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _pillChip({
-    required IconData icon,
-    required String text,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 5),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

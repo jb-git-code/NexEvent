@@ -3,22 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
-import 'package:nexevent/providers/auth_state_provider.dart';
-import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/admin/announcement_page.dart';
 import 'package:nexevent/screens/admin/create_event_page.dart';
-import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/screens/auth/scanner_page.dart';
 import 'package:nexevent/screens/community/college_feed.dart';
 import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
-import 'package:nexevent/screens/home/saved_events.dart';
-import 'package:nexevent/screens/home/user_registrations.dart';
-import 'package:nexevent/services/auth_service.dart';
-import 'package:nexevent/services/firestore_service.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});

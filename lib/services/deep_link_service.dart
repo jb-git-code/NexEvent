@@ -1,6 +1,5 @@
 import 'package:app_links/app_links.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nexevent/keys.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';

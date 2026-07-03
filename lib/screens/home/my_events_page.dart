@@ -151,7 +151,6 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
                               evSnapshot.data!.data() as Map<String, dynamic>;
                           final eventName =
                               eventData["name"] ?? 'Untitled Event';
-                          final eventVenue = eventData["venue"] ?? 'TBD';
 
                           // Cycle pastel backings
                           final List<Color> ticketBgColors = [
@@ -291,93 +290,6 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildChartColumn(String label, List<Widget> segments) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: segments,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10.5,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF94A3B8),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChartPill(double height, Color color, {String? badgeText}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0),
-      width: 44,
-      height: height,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      alignment: Alignment.center,
-      child: badgeText != null
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF111111),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                badgeText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  Widget _buildChartPillOutline(double height) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0),
-      width: 44,
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF64748B),
-          ),
-        ),
-      ],
     );
   }
 

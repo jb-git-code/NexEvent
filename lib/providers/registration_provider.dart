@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/registration_model.dart';
-import 'package:nexevent/models/user_model.dart';
 
 
 final currentRegProvider =

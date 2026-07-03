@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/community/community_detail_page.dart';
-import 'package:nexevent/screens/home/profile_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 
 // final likeProvider = StateProvider<bool> ((ref){
@@ -152,7 +151,7 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              final doc = docs[index].data() as Map<String, dynamic>;
+              final doc = docs[index].data();
               final docId = docs[index].id;
 
               return GestureDetector(

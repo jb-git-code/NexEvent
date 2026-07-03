@@ -82,7 +82,6 @@ class _SignupScreenState extends State<SignupScreen> {
   //   });
   // }
 
-  int? _value = 1;
 
   List<String> roles = ['student', 'admin'];
 
