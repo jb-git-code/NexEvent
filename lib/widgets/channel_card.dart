@@ -1,123 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:nexevent/models/channel_model.dart';
-
-// class ChannelCard extends StatelessWidget {
-//   final ChannelModel channel;
-//   final bool isJoined;
-//   final VoidCallback onPressed;
-
-//   const ChannelCard({
-//     super.key,
-//     required this.channel,
-//     required this.isJoined,
-//     required this.onPressed,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final bool isOfficial = channel.type == "official";
-
-//     Color accentColor =
-//         isOfficial ? Colors.blue : Colors.orange;
-
-//     return Container(
-//       margin: const EdgeInsets.symmetric(vertical: 8),
-//       padding: const EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(16),
-//         border: Border.all(
-//           color: Colors.grey.shade300,
-//         ),
-//       ),
-//       child: Row(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           CircleAvatar(
-//             radius: 26,
-//             backgroundColor: accentColor.withOpacity(0.12),
-//             child: Text(
-//               channel.icon,
-//               style: const TextStyle(fontSize: 22),
-//             ),
-//           ),
-
-//           const SizedBox(width: 16),
-
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment:
-//                   CrossAxisAlignment.start,
-//               children: [
-
-//                 Text(
-//                   channel.name,
-//                   style: const TextStyle(
-//                     fontWeight: FontWeight.bold,
-//                     fontSize: 17,
-//                   ),
-//                 ),
-
-//                 const SizedBox(height: 6),
-
-//                 Text(
-//                   channel.description,
-//                   style: TextStyle(
-//                     color: Colors.grey.shade700,
-//                     fontSize: 13,
-//                   ),
-//                 ),
-
-//                 const SizedBox(height: 10),
-
-//                 Row(
-//                   children: [
-
-//                     const Icon(
-//                       Icons.people_alt_outlined,
-//                       size: 16,
-//                       color: Colors.grey,
-//                     ),
-
-//                     const SizedBox(width: 4),
-
-//                     Text(
-//                       "${channel.memberCount} Members",
-//                       style: TextStyle(
-//                         color: Colors.grey.shade600,
-//                         fontSize: 12,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-
-//           const SizedBox(width: 10),
-
-//           channel.isMandatory
-//               ? FilledButton(
-//                   onPressed: null,
-//                   child: const Text("Mandatory"),
-//                 )
-//               : FilledButton(
-//                   style: FilledButton.styleFrom(
-//                     backgroundColor: isJoined
-//                         ? Colors.green
-//                         : accentColor,
-//                   ),
-//                   onPressed: onPressed,
-//                   child: Text(
-//                     isJoined ? "Joined" : "Join",
-//                   ),
-//                 ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/channel_model.dart';
@@ -212,8 +92,11 @@ class _ChannelCardState extends ConsumerState<ChannelCard> {
     final accent = ChannelCard._typeAccent(widget.type);
     final bg = ChannelCard._typeColor(widget.type);
     final iconData = ChannelCard._iconFromString(widget.icon);
-    final currentUser = ref.watch(currentUserProvider);
-    final isJoined = currentUser!.joinedChannels.contains(widget.channelId);
+    final isJoined = ref.watch(
+      currentUserProvider.select(
+        (user) => user?.joinedChannels.contains(widget.channelId) ?? false,
+      ),
+    );
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -346,28 +229,26 @@ class _ChannelCardState extends ConsumerState<ChannelCard> {
                     ),
 
                     const Spacer(),
-
-                    // join / joined button
                     GestureDetector(
-                      onTap: (widget.isMandatory)
+                      onTap: widget.isMandatory
                           ? null
-                          : (() async {
-                              final isJoin = currentUser!.joinedChannels
-                                  .contains(widget.channelId);
+                          : () async {
                               final user = ref.read(currentUserProvider)!;
+                              final isJoin = user.joinedChannels.contains(
+                                widget.channelId,
+                              );
+
                               if (isJoin) {
                                 await ChannelService().leaveChannel(
-                                  uid: currentUser.uid,
+                                  uid: user.uid,
                                   channelId: widget.channelId,
                                 );
-
                                 final updatedUser = user.copyWith(
                                   joinedChannels: user.joinedChannels
                                       .cast<String>()
                                       .where((id) => id != widget.channelId)
                                       .toList(),
                                 );
-
                                 ref
                                     .read(currentUserProvider.notifier)
                                     .setUser(updatedUser);
@@ -375,26 +256,23 @@ class _ChannelCardState extends ConsumerState<ChannelCard> {
                                     .unsubscribeFromChannel(widget.channelId);
                               } else {
                                 await ChannelService().joinChannel(
-                                  uid: currentUser.uid,
+                                  uid: user.uid,
                                   channelId: widget.channelId,
                                 );
-
                                 final updatedUser = user.copyWith(
                                   joinedChannels: [
                                     ...user.joinedChannels,
                                     widget.channelId,
                                   ],
                                 );
-
                                 ref
                                     .read(currentUserProvider.notifier)
                                     .setUser(updatedUser);
-
                                 await NotificationService().subscribeToChannel(
                                   widget.channelId,
                                 );
                               }
-                            }),
+                            },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeOutCubic,

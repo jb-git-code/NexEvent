@@ -54,6 +54,7 @@ class _ChannelsPageState extends ConsumerState<ChannelsPage> {
                 type: channelData["type"],
                 memberCount: channelData["memberCount"] ?? 0,
                 isMandatory: channelData["isMandatory"] ?? false,
+                key: ValueKey(channelData["channelId"]),
                 channelId: channelData["channelId"],
                 // onJoin: () async {
                 //   if (channel.isMandatory) return;

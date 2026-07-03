@@ -118,12 +118,6 @@ class _AnnouncementPageState extends ConsumerState<AnnouncementPage> {
                   backgroundColor: WidgetStatePropertyAll(Colors.black),
                 ),
                 onPressed: () async {
-                  // if(title.tex == null || content.text ==null){
-                  //    ScaffoldMessenger.of(context).showSnackBar(
-                  //     const SnackBar(content: Text("Please select a channel")),
-                  //   );
-                  //   return;
-                  // }
                   if (selectedChannel == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Please select a channel")),
