@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/providers/registration_provider.dart';
+import 'package:nexevent/screens/creative/creative_page.dart';
 import 'package:nexevent/screens/home/channel_page.dart';
 import 'package:nexevent/screens/home/user_registrations.dart';
 import 'package:nexevent/services/firestore_service.dart';
@@ -63,7 +64,14 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
                           icon: Icons.create,
                           title: 'Create',
                           color: const Color(0xFFFFF1F2),
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CreativePage(),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: 16),
