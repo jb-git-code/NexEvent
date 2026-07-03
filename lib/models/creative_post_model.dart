@@ -7,7 +7,8 @@ class CreativePostModel {
   final String coverImage;
   final List<String> mediaUrls;
   final String contentType;
-  final String clubId;
+  final String channelId;
+  final String channelName;
   final String authorId;
   final String authorName;
   final DateTime createdAt;
@@ -28,6 +29,45 @@ class CreativePostModel {
     required this.likeCount,
     required this.isPinned,
     required this.authorName,
-    required this.clubId,
+    required this.channelId,
+    required this.channelName,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      "postId": postId,
+      "title": title,
+      "description": description,
+      "contentType": contentType,
+      "coverImage": coverImage,
+      "mediaUrls": mediaUrls,
+      "channelId": channelId,
+      "channelName": channelName,
+      "authorId": authorId,
+      "authorName": authorName,
+      "createdAt": Timestamp.fromDate(createdAt),
+      "likeCount": likeCount,
+      "commentCount": commentCount,
+      "isPinned": isPinned,
+    };
+  }
+
+  factory CreativePostModel.fromMap(Map<String, dynamic> map) {
+    return CreativePostModel(
+      postId: map["postId"] ?? "",
+      title: map["title"] ?? "",
+      description: map["description"] ?? "",
+      contentType: map["contentType"] ?? "",
+      coverImage: map["coverImage"] ?? "",
+      mediaUrls: List<String>.from(map["mediaUrls"] ?? []),
+      channelId: map["channelId"] ?? "",
+      channelName: map["channelName"] ?? "",
+      authorId: map["authorId"] ?? "",
+      authorName: map["authorName"] ?? "",
+      createdAt: (map["createdAt"] as Timestamp?)?.toDate() ?? DateTime.now(),
+      likeCount: map["likeCount"] ?? 0,
+      commentCount: map["commentCount"] ?? 0,
+      isPinned: map["isPinned"] ?? false,
+    );
+  }
 }

@@ -13,8 +13,21 @@ class StorageService {
     return await ref.getDownloadURL();
   }
 
+  Future<String> uploadCreativePoster(File image, String eventId) async {
+    final ref = storage.ref().child("creative_event_posters/$eventId.jpg");
+
+    await ref.putFile(image);
+
+    return await ref.getDownloadURL();
+  }
+
   Future<void> deletePoster(String id) async {
     final ref = storage.ref().child("event_posters/$id.jpg");
+
+    await ref.delete();
+  }
+   Future<void> deleteCreativePoster(String id) async {
+    final ref = storage.ref().child("creative_event_posters/$id.jpg");
 
     await ref.delete();
   }
