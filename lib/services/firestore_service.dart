@@ -114,4 +114,7 @@ class FirestoreService {
     await postRef.collection("likes").doc(uid).delete();
     await postRef.update({"likeCount": FieldValue.increment(-1)});
   }
+
+
+  
 }

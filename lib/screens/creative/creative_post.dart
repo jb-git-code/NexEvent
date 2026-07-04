@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'dart:math';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/services/storage_services.dart';
-import 'package:uuid/uuid.dart';
+import 'package:nexevent/widgets/content_type_card.dart';
 
 class CreativePost extends ConsumerStatefulWidget {
   const CreativePost({super.key});
@@ -24,6 +23,7 @@ class _CreativePostState extends ConsumerState<CreativePost> {
 
   File? imageFile;
   final ImagePicker picker = ImagePicker();
+  String selectedType = "null";
 
   String img = "";
   String generateFix8DigitNumber() {
@@ -45,7 +45,6 @@ class _CreativePostState extends ConsumerState<CreativePost> {
     //   isUploading = true;
     // });
     String pid = generateFix8DigitNumber();
-    final user = ref.read(currentUserProvider);
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
@@ -69,6 +68,34 @@ class _CreativePostState extends ConsumerState<CreativePost> {
     });
   }
 
+  PlatformFile? selectedDocument;
+  Future<void> pickDocument() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedDocument = result.files.first;
+      });
+    }
+  }
+
+  List<XFile> images = [];
+
+  final mpicker = ImagePicker();
+
+  Future<void> pickImages() async {
+    final result = await mpicker.pickMultiImage();
+
+    if (result.isNotEmpty) {
+      setState(() {
+        images = result;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,65 +113,72 @@ class _CreativePostState extends ConsumerState<CreativePost> {
               ),
             ),
             const SizedBox(height: 20),
-            //description box
-            TextField(
-              controller: description,
-              decoration: InputDecoration(
-                hintText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
+            // //description box
+            // TextField(
+            //   controller: description,
+            //   decoration: InputDecoration(
+            //     hintText: 'Description',
+            //     border: OutlineInputBorder(),
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
 
             // content type drop down
-            DropdownButtonFormField<String>(
-              value: selectedContent,
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: Color(0xFF94A3B8),
-              ),
-              decoration: InputDecoration(
-                hintText: 'Select content type...',
-                hintStyle: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 13.5,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF111111),
-                    width: 1.5,
+            SizedBox(
+              height: 140,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  SizedBox(
+                    width: 250,
+                    child: ContentTypeCard(
+                      icon: Icons.photo_library,
+                      title: "Image Gallery",
+                      subtitle: "Share multiple photos",
+                      isSelected: selectedType == "imageGallery",
+                      onTap: () {
+                        setState(() {
+                          selectedType = "imageGallery";
+                        });
+                      },
+                    ),
                   ),
-                ),
+
+                  const SizedBox(width: 15),
+
+                  SizedBox(
+                    width: 250,
+                    child: ContentTypeCard(
+                      icon: Icons.article,
+                      title: "Article",
+                      subtitle: "Upload an article document",
+                      isSelected: selectedType == "article",
+                      onTap: () {
+                        setState(() {
+                          selectedType = "article";
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  SizedBox(
+                    width: 250,
+                    child: ContentTypeCard(
+                      icon: Icons.edit_note,
+                      title: "Writing",
+                      subtitle: "Poems, stories & creative writing",
+                      isSelected: selectedType == "writing",
+                      onTap: () {
+                        setState(() {
+                          selectedType = "writing";
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
-              items: [
-                _contentItem(
-                  'imageGallery',
-                  'Image Gallery',
-                  Icons.photo_library_outlined,
-                ),
-                _contentItem('article', 'Article', Icons.article_outlined),
-                _contentItem(
-                  'newsletter',
-                  'Newsletter',
-                  Icons.mark_email_read_outlined,
-                ),
-              ],
-              onChanged: (value) => setState(() => selectedContent = value),
             ),
             const SizedBox(height: 20),
             StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -183,30 +217,160 @@ class _CreativePostState extends ConsumerState<CreativePost> {
                 );
               },
             ),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: GestureDetector(
-                onTap: pickImage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.green[100],
+            const SizedBox(height: 20),
+            (selectedType == 'writing')
+                ?
+                  //description box
+                  Column(
+                    children: [
+                      TextField(
+                        controller: description,
+                        decoration: InputDecoration(
+                          hintText: 'Write your Content',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      //cover image picker
+                      Padding(
+                        padding: EdgeInsets.all(16),
+                        child: GestureDetector(
+                          onTap: pickImage,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.grey[300],
+                            ),
+
+                            height: 200,
+                            width: 340,
+                            child: (imageFile == null)
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.image),
+                                      Text('Cover Image (Optional)'),
+                                    ],
+                                  )
+                                : Image.file(fit: BoxFit.cover, imageFile!),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : (selectedType == 'article')
+                ? Column(
+                    children: [
+                      TextField(
+                        controller: description,
+                        decoration: InputDecoration(
+                          hintText: 'Article Description',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      //cover image picker
+                      Padding(
+                        padding: EdgeInsets.all(16),
+                        child: GestureDetector(
+                          onTap: pickImage,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.grey[300],
+                            ),
+
+                            height: 150,
+                            width: 340,
+                            child: (imageFile == null)
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.image),
+                                      Text('Cover Image'),
+                                    ],
+                                  )
+                                : Image.file(fit: BoxFit.cover, imageFile!),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      OutlinedButton.icon(
+                        onPressed: pickDocument,
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: Text(
+                          selectedDocument == null
+                              ? "Select PDF"
+                              : selectedDocument!.name,
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      TextField(
+                        controller: description,
+                        decoration: InputDecoration(
+                          hintText: 'Description',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      //cover image picker
+                      Padding(
+                        padding: EdgeInsets.all(16),
+                        child: GestureDetector(
+                          onTap: pickImage,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.grey[300],
+                            ),
+
+                            height: 100,
+                            width: 340,
+                            child: (imageFile == null)
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.image),
+                                      Text('Cover Image'),
+                                    ],
+                                  )
+                                : Image.file(fit: BoxFit.cover, imageFile!),
+                          ),
+                        ),
+                      ),
+                      // const SizedBox(height: 20),
+                      OutlinedButton.icon(
+                        onPressed: pickImages,
+                        icon: const Icon(Icons.photo_library),
+                        label: const Text("Select Images"),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: images.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  File(images[index].path),
+                                  width: 100,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
 
-                  height: 200,
-                  width: 340,
-                  child: (imageFile == null)
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.image),
-                            Text('Add Cover Image'),
-                          ],
-                        )
-                      : Image.file(fit: BoxFit.cover, imageFile!),
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
             TextButton(
               style: ButtonStyle(
@@ -219,17 +383,6 @@ class _CreativePostState extends ConsumerState<CreativePost> {
           ],
         ),
       ),
-    );
-  }
-
-  DropdownMenuItem<String> _contentItem(
-    String value,
-    String title,
-    IconData icon,
-  ) {
-    return DropdownMenuItem(
-      value: value,
-      child: Row(children: [Icon(icon), SizedBox(width: 10), Text(title)]),
     );
   }
 }

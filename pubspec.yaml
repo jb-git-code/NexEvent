@@ -43,12 +43,12 @@ dependencies:
   flutter_local_notifications: ^22.0.0
   cached_network_image: ^3.4.1
   flutter_riverpod: ^2.6.1
-  share_plus: ^13.1.0
   app_links: ^7.1.2
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.2.0
   intl: ^0.20.3
   flutter_animate: ^4.5.2
+  file_picker: ^10.3.2
 
 dev_dependencies:
   flutter_test:
