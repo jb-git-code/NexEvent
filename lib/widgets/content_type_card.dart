@@ -25,14 +25,10 @@ class ContentTypeCard extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.blue.withOpacity(0.08)
-              : Colors.white,
+          color: isSelected ? Colors.blue.withOpacity(0.08) : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected
-                ? Colors.blue
-                : Colors.grey.shade300,
+            color: isSelected ? Colors.blue : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -40,14 +36,10 @@ class ContentTypeCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: isSelected
-                  ? Colors.blue
-                  : Colors.grey.shade200,
+              backgroundColor: isSelected ? Colors.blue : Colors.grey.shade200,
               child: Icon(
                 icon,
-                color: isSelected
-                    ? Colors.white
-                    : Colors.black87,
+                color: isSelected ? Colors.white : Colors.black87,
               ),
             ),
 
@@ -55,8 +47,7 @@ class ContentTypeCard extends StatelessWidget {
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
@@ -68,22 +59,13 @@ class ContentTypeCard extends StatelessWidget {
 
                   const SizedBox(height: 4),
 
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  Text(subtitle, style: TextStyle(color: Colors.grey.shade600)),
                 ],
               ),
             ),
 
             if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Colors.blue,
-                size: 28,
-              ),
+              const Icon(Icons.check_circle, color: Colors.blue, size: 28),
           ],
         ),
       ),

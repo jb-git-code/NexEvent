@@ -26,9 +26,39 @@ class StorageService {
 
     await ref.delete();
   }
-   Future<void> deleteCreativePoster(String id) async {
+
+  Future<void> deleteCreativePoster(String id) async {
     final ref = storage.ref().child("creative_event_posters/$id.jpg");
 
     await ref.delete();
+  }
+
+  Future<String> uploadGalleryImage(
+    File file,
+    String postId,
+    String imageId,
+  ) async {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child("creative_posts")
+        .child(postId)
+        .child("gallery")
+        .child("$imageId.jpg");
+
+    await ref.putFile(file);
+
+    return await ref.getDownloadURL();
+  }
+
+  Future<String> uploadArticle(File file, String postId) async {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child("creative_posts")
+        .child(postId)
+        .child("article.pdf");
+
+    await ref.putFile(file);
+
+    return await ref.getDownloadURL();
   }
 }

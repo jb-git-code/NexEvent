@@ -4,14 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
-import 'package:nexevent/screens/admin/announcement_page.dart';
-import 'package:nexevent/screens/admin/create_event_page.dart';
-import 'package:nexevent/screens/auth/scanner_page.dart';
 import 'package:nexevent/screens/community/college_feed.dart';
 import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
+import 'package:nexevent/widgets/drawer_widget.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -116,72 +114,24 @@ class _HomePageState extends ConsumerState<HomePage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          if (!isLoading && role != 'student') ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: primaryColor.withValues(alpha: 0.08),
-                  foregroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.all(10),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const QRScannerPage()),
-                  );
-                },
-                icon: const Icon(Icons.qr_code_rounded),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: primaryColor.withValues(alpha: 0.08),
-                  foregroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.all(10),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CreateEventPage(),
+          if (!isLoading && role != 'student')
+            Builder(
+              builder: (innerContext) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: IconButton(
+                  style: IconButton.styleFrom(
+                    backgroundColor: primaryColor.withValues(alpha: 0.08),
+                    foregroundColor: primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.post_add_rounded, size: 22),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: primaryColor.withValues(alpha: 0.08),
-                  foregroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.all(10),
                   ),
-                  padding: const EdgeInsets.all(10),
+                  onPressed: () => Scaffold.of(innerContext).openEndDrawer(),
+                  icon: const Icon(Icons.menu_rounded),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AnnouncementPage(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.pending_actions_outlined, size: 22),
               ),
             ),
-          ],
         ],
       ),
       body: pages[_selectedIndex],
@@ -222,6 +172,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
+      endDrawer: buildAdminDrawer(context, role: role),
     );
   }
 }

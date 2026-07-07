@@ -403,69 +403,104 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             ),
                             const SizedBox(width: 12),
                           ],
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF111111),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
-                              onPressed: () async {
-                                final uid =
-                                    FirebaseAuth.instance.currentUser!.uid;
-
-                                final query = await FirebaseFirestore.instance
-                                    .collection("registrations")
-                                    .where("userId", isEqualTo: uid)
-                                    .where("eventId", isEqualTo: widget.eventId)
-                                    .get();
-
-                                if (query.docs.isEmpty) {
-                                  final regId = const Uuid().v4();
-                                  await FirestoreService().registerEvent(
-                                    RegistrationModel(
-                                      registrationId: regId,
-                                      eventId: widget.eventId,
-                                      userId: uid,
-                                      attented: false,
+                          (widget.status == 'Live' ||
+                                  widget.status == 'Upcoming')
+                              ? Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF111111),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
                                     ),
-                                  );
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Registered Successfully!",
-                                        ),
+                                    onPressed: () async {
+                                      final uid = FirebaseAuth
+                                          .instance
+                                          .currentUser!
+                                          .uid;
+
+                                      final query = await FirebaseFirestore
+                                          .instance
+                                          .collection("registrations")
+                                          .where("userId", isEqualTo: uid)
+                                          .where(
+                                            "eventId",
+                                            isEqualTo: widget.eventId,
+                                          )
+                                          .get();
+
+                                      if (query.docs.isEmpty) {
+                                        final regId = const Uuid().v4();
+                                        await FirestoreService().registerEvent(
+                                          RegistrationModel(
+                                            registrationId: regId,
+                                            eventId: widget.eventId,
+                                            userId: uid,
+                                            attented: false,
+                                          ),
+                                        );
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Registered Successfully!",
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        await NotificationService()
+                                            .showRegistrationSuccess(
+                                              widget.name,
+                                            );
+                                      } else {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Already Registered",
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    child: const Text(
+                                      "Register",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
                                       ),
-                                    );
-                                  }
-                                  await NotificationService()
-                                      .showRegistrationSuccess(widget.name);
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Already Registered"),
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text(
-                                "Register",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed:
+                                      null, // null = disabled, unclickable
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey.shade400,
+                                    disabledBackgroundColor:
+                                        Colors.grey.shade400,
+                                    disabledForegroundColor:
+                                        Colors.grey.shade700,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.lock, size: 16),
+                                      SizedBox(width: 6),
+                                      Text('Registration Closed'),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -516,7 +551,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 11,
               fontWeight: FontWeight.w800,
               color: Color(0xFF111111),
               height: 1.3,

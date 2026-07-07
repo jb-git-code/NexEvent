@@ -10,6 +10,13 @@ class FirestoreService {
     return firestore.collection(eve).snapshots();
   }
 
+  Stream<QuerySnapshot> getAllEvents() {
+    return firestore
+        .collection('events')
+        .orderBy("eventDate", descending: true)
+        .snapshots();
+  }
+
   Future<void> createEvent(EventModel event) async {
     await FirebaseFirestore.instance
         .collection("events")
@@ -114,7 +121,4 @@ class FirestoreService {
     await postRef.collection("likes").doc(uid).delete();
     await postRef.update({"likeCount": FieldValue.increment(-1)});
   }
-
-
-  
 }

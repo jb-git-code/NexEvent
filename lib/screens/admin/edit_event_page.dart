@@ -27,6 +27,8 @@ class _EditEventPageState extends State<EditEventPage> {
 
   bool isUploading = true;
 
+  bool cancel = false;
+
   File? imageFile;
   final ImagePicker picker = ImagePicker();
   String img = '';
@@ -245,6 +247,19 @@ class _EditEventPageState extends State<EditEventPage> {
                     },
                     child: Text('End Date'),
                   ),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: (cancel)
+                          ? WidgetStatePropertyAll(Colors.green)
+                          : WidgetStatePropertyAll(Colors.red),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        cancel = !cancel;
+                      });
+                    },
+                    child: (cancel) ? Text('Continue') : Text('Cancel'),
+                  ),
                 ],
               ),
               const SizedBox(height: 32),
@@ -286,7 +301,7 @@ class _EditEventPageState extends State<EditEventPage> {
 
                       endDate: edt ?? (mpp["endDate"] as Timestamp).toDate(),
 
-                      isCancelled: mpp["isCancelled"] ?? false,
+                      isCancelled: cancel,
                     ),
                     widget.docId,
                   );
@@ -303,6 +318,10 @@ class _EditEventPageState extends State<EditEventPage> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
+              const SizedBox(height: 10),
+              (cancel)
+                  ? Center(child: Text('Your event is set to Cancelled'))
+                  : const SizedBox(),
             ],
           ),
         ),

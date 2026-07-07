@@ -243,52 +243,52 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                           ],
                         ),
                       ),
-                      Column(
-                        children: [
-                          Icon(Icons.favorite, color: Colors.red),
-                          StreamBuilder(
-                            stream: FirebaseFirestore.instance
-                                .collection("announcements")
-                                .doc(doc["id"])
-                                .collection("likes")
-                                .snapshots(),
 
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Text("0");
-                              }
+                      // Column(
+                      //   children: [
+                      //     Icon(Icons.favorite, color: Colors.red),
+                      //     StreamBuilder(
+                      //       stream: FirebaseFirestore.instance
+                      //           .collection("announcements")
+                      //           .doc(doc["id"])
+                      //           .collection("likes")
+                      //           .snapshots(),
 
-                              return Text(
-                                snapshot.data!.docs.length.toString(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 25),
-                      Column(
-                        children: [
-                          Icon(Icons.messenger, color: Colors.blue),
-                          StreamBuilder(
-                            stream: FirebaseFirestore.instance
-                                .collection("announcements")
-                                .doc(doc["id"])
-                                .collection("comments")
-                                .snapshots(),
+                      //       builder: (context, snapshot) {
+                      //         if (!snapshot.hasData) {
+                      //           return const Text("0");
+                      //         }
 
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Text("0");
-                              }
+                      //         return Text(
+                      //           snapshot.data!.docs.length.toString(),
+                      //         );
+                      //       },
+                      //     ),
+                      //   ],
+                      // ),
+                      // const SizedBox(width: 25),
+                      // Column(
+                      //   children: [
+                      //     Icon(Icons.messenger, color: Colors.blue),
+                      //     StreamBuilder(
+                      //       stream: FirebaseFirestore.instance
+                      //           .collection("announcements")
+                      //           .doc(doc["id"])
+                      //           .collection("comments")
+                      //           .snapshots(),
 
-                              return Text(
-                                snapshot.data!.docs.length.toString(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                      //       builder: (context, snapshot) {
+                      //         if (!snapshot.hasData) {
+                      //           return const Text("0");
+                      //         }
 
+                      //         return Text(
+                      //           snapshot.data!.docs.length.toString(),
+                      //         );
+                      //       },
+                      //     ),
+                      //   ],
+                      // ),
                       const SizedBox(width: 25),
                       if (user?.role == 'admin')
                         InkWell(
