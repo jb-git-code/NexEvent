@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nexevent/screens/auth/password_recovery.dart';
 import 'package:nexevent/screens/home/home_page.dart';
 import 'package:nexevent/screens/auth/signup_screen.dart';
 import 'package:nexevent/services/auth_service.dart';
@@ -151,6 +152,34 @@ class _loginScreenState extends State<loginScreen> {
                       },
                       child: Text(
                         'Sign Up',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Forgot your password? ",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PasswordRecovery(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Reset',
                         style: TextStyle(
                           color: primaryColor,
                           fontWeight: FontWeight.bold,
