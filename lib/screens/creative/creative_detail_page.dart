@@ -29,7 +29,7 @@ class _CreativeDetailPageState extends State<CreativeDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if ((widget.post.coverImage ?? "").isNotEmpty)
+            if ((widget.post.coverImage ).isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: Image.network(

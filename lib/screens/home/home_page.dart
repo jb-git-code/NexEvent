@@ -67,7 +67,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
     final primaryColor = Theme.of(context).primaryColor;
     if (isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -95,18 +94,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 color: Color(0xFF111827),
               ),
             ),
-            if (user != null && user.email != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 2.0),
-                child: Text(
-                  user.email!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ),
           ],
         ),
         centerTitle: false,

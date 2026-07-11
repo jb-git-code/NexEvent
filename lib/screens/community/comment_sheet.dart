@@ -1,17 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/providers/user_provider.dart';
 
-class CommentSheet extends StatefulWidget {
+class CommentSheet extends ConsumerStatefulWidget {
   const CommentSheet({super.key, required this.postId});
 
   final String postId;
 
   @override
-  State<CommentSheet> createState() => _CommentSheetState();
+  ConsumerState<CommentSheet> createState() => _CommentSheetState();
 }
 
-class _CommentSheetState extends State<CommentSheet> {
+class _CommentSheetState extends ConsumerState<CommentSheet> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _sending = false;
@@ -26,21 +27,19 @@ class _CommentSheetState extends State<CommentSheet> {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final curUser = ref.read(currentUserProvider);
+    if (curUser == null) return;
 
     setState(() => _sending = true);
 
     try {
-      // 1. add the comment doc
       await _commentsRef.add({
         'text': text,
-        'userId': user.uid,
-        'userName': user.displayName ?? 'Anonymous',
+        'userId': curUser.uid,
+        'userName': curUser.name,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // 2. keep the denormalized counter on the post in sync
       await FirebaseFirestore.instance
           .collection('posts')
           .doc(widget.postId)
@@ -100,8 +99,6 @@ class _CommentSheetState extends State<CommentSheet> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // ---- title ----
             const Text(
               'Comments',
               style: TextStyle(
@@ -112,9 +109,7 @@ class _CommentSheetState extends State<CommentSheet> {
             ),
             const SizedBox(height: 4),
             const Divider(color: Color(0xFFF1F5F9), height: 1),
-
-            // ---- comments list ----
-            Expanded(
+           Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: _commentsRef
                     .orderBy('createdAt', descending: true)
@@ -250,7 +245,6 @@ class _CommentSheetState extends State<CommentSheet> {
               ),
             ),
 
-            // ---- input row ----
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
               child: Row(
