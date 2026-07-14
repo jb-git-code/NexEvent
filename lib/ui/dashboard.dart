@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/food/foods.dart';
 import 'package:nexevent/map/campus_map.dart';
 import 'package:nexevent/providers/user_provider.dart';
+import 'package:nexevent/quick_links/quick_links.dart';
 import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/channel_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
@@ -100,7 +101,11 @@ class _NexEventDashboardPolyState extends ConsumerState<NexEventDashboardPoly> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(radius: 11, backgroundColor: Colors.white38),
+                CircleAvatar(
+                  radius: 11,
+                  backgroundColor: Colors.white38,
+                  child: Icon(size: 14, Icons.arrow_back),
+                ),
                 SizedBox(width: 8),
                 Text(
                   cu?.name ?? "Guest",
@@ -248,7 +253,7 @@ class _NexEventDashboardPolyState extends ConsumerState<NexEventDashboardPoly> {
 
   Widget _scheduleCard(_SessionInfo s) {
     return Container(
-      height: 220,
+      height: 150,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -391,12 +396,12 @@ class _NexEventDashboardPolyState extends ConsumerState<NexEventDashboardPoly> {
         (context) => FoodsScreen(),
       ),
       _ServiceItem(
-        'Campus Map',
-        'Navigate venues',
-        Icons.map_rounded,
+        'Quick Links',
+        'Navigate easily',
+        Icons.link_sharp,
         Color(0xFF20C997),
         false,
-        (context) => CampusMapPage(),
+        (context) => QuickLinks(),
       ),
       _ServiceItem(
         'Announcements',

@@ -91,7 +91,7 @@ class NexEventBottomNav extends StatelessWidget {
     _NavItem('Home', Icons.home_rounded),
     _NavItem('Feed', Icons.dynamic_feed_rounded),
     _NavItem('Explore', Icons.search_rounded),
-    _NavItem('Communities', Icons.forum_rounded),
+    _NavItem('Community', Icons.forum_rounded),
   ];
 
   @override

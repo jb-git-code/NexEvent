@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/services/auth_service.dart';
-import 'package:nexevent/theme/app_theme.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -17,9 +15,8 @@ class ProfilePage extends ConsumerStatefulWidget {
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
+    final primaryColor = Theme.of(context).primaryColor;
+    final secondaryColor = Theme.of(context).colorScheme.secondary;
     final currUser = ref.watch(currentUserProvider);
     final userEmail = currUser!.email;
 
@@ -28,26 +25,30 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         : (userEmail.isNotEmpty ? userEmail[0].toUpperCase() : 'U');
 
     return Scaffold(
-      appBar: AppBar(title: Text('Profile')),
-      backgroundColor: colors.background,
+      appBar: AppBar(title: Text('Profile'), centerTitle: true),
+      backgroundColor: const Color(0xFFF9FAFB),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 28.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
         child: Column(
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // Avatar
+            // Avatar with primary-secondary gradient
             Center(
               child: Container(
-                width: 92,
-                height: 92,
+                width: 96,
+                height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: colors.primary,
+                  gradient: LinearGradient(
+                    colors: [primaryColor, secondaryColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.25),
+                      color: primaryColor.withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -56,86 +57,115 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 child: Center(
                   child: Text(
                     initial,
-                    style: text.h1.copyWith(
-                      color: colors.onPrimary,
-                      fontSize: 34,
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
 
             // Name
             Text(
               currUser.name.isNotEmpty ? currUser.name : userEmail,
               textAlign: TextAlign.center,
-              style: text.h2,
+              style: const TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+                letterSpacing: -0.4,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+
+            // // Branch + Batch pills
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     _pillChip(
+            //       icon: Icons.school_outlined,
+            //       text: currUser.branch,
+            //       color: secondaryColor,
+            //     ),
+            //     const SizedBox(width: 8),
+            //     _pillChip(
+            //       icon: Icons.groups_outlined,
+            //       text: currUser.batch,
+            //       color: primaryColor,
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 32),
 
             // Detail Information Card
-            Container(
-              padding: const EdgeInsets.all(18.0),
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: colors.border, width: 1),
-              ),
-              child: Column(
-                children: [
-                  _detailTile(
-                    context,
-                    icon: LucideIcons.mail,
-                    label: 'EMAIL ADDRESS',
-                    value: userEmail,
-                  ),
-                  _tileDivider(context),
-                  _detailTile(
-                    context,
-                    icon: LucideIcons.idCard,
-                    label: 'ROLL NUMBER',
-                    value: currUser.roll,
-                  ),
-                  _tileDivider(context),
-                  _detailTile(
-                    context,
-                    icon: LucideIcons.gitBranch,
-                    label: 'BRANCH',
-                    value: currUser.branch,
-                  ),
-                  _tileDivider(context),
-                  _detailTile(
-                    context,
-                    icon: LucideIcons.calendar,
-                    label: 'BATCH',
-                    value: currUser.batch,
-                  ),
-                  _tileDivider(context),
-                  _detailTile(
-                    context,
-                    icon: LucideIcons.tag,
-                    label: 'TAG',
-                    value: currUser.tag,
-                  ),
-                ],
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    // Email Tile
+                    _detailTile(
+                      icon: Icons.email_outlined,
+                      iconColor: primaryColor,
+                      label: 'EMAIL ADDRESS',
+                      value: userEmail,
+                    ),
+                    _tileDivider(),
+
+                    // Roll Number Tile
+                    _detailTile(
+                      icon: Icons.badge_outlined,
+                      iconColor: Colors.indigo,
+                      label: 'ROLL NUMBER',
+                      value: currUser.roll,
+                    ),
+                    _tileDivider(),
+
+                    // Branch Tile
+                    _detailTile(
+                      icon: Icons.account_tree_outlined,
+                      iconColor: Colors.orange,
+                      label: 'BRANCH',
+                      value: currUser.branch,
+                    ),
+                    _tileDivider(),
+
+                    // Batch Tile
+                    _detailTile(
+                      icon: Icons.calendar_today_outlined,
+                      iconColor: Colors.teal,
+                      label: 'BATCH',
+                      value: currUser.batch,
+                    ),
+                    _tileDivider(),
+
+                    // Tag Tile
+                    _detailTile(
+                      icon: Icons.sell_outlined,
+                      iconColor: secondaryColor,
+                      label: 'TAG',
+                      value: currUser.tag,
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
 
             // Logout button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.error,
+                  foregroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(
-                    color: colors.error.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
+                  side: const BorderSide(color: Color(0xFFFECACA), width: 1.5),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 onPressed: () async {
@@ -153,10 +183,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     );
                   }
                 },
-                icon: const Icon(LucideIcons.logOut, size: 18),
-                label: Text(
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: const Text(
                   'Logout',
-                  style: text.bodyMedium.copyWith(color: colors.error),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                 ),
               ),
             ),
@@ -166,35 +196,73 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _detailTile(
-    BuildContext context, {
+  Widget _pillChip({
     required IconData icon,
+    required String text,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailTile({
+    required IconData icon,
+    required Color iconColor,
     required String label,
     required String value,
   }) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: colors.primaryMuted,
+            color: iconColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: colors.primary, size: 18),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: text.label.copyWith(fontSize: 10)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey[400],
+                  letterSpacing: 0.8,
+                ),
+              ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: text.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                ),
               ),
             ],
           ),
@@ -203,11 +271,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _tileDivider(BuildContext context) {
-    final colors = AppColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14.0),
-      child: Divider(color: colors.divider, height: 1),
+  Widget _tileDivider() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.0),
+      child: Divider(color: Color(0xFFF3F4F6), height: 1),
     );
   }
 }

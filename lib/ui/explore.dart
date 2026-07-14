@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NexEventExplorePoly extends StatelessWidget {
   const NexEventExplorePoly({super.key});
@@ -23,9 +24,24 @@ class NexEventExplorePoly extends StatelessWidget {
   ];
 
   static const _clubs = [
-    _Club('Photography Club', '1.2k members', Icons.camera_alt_rounded, Color(0xFFEE6C9C)),
-    _Club('Robotics Society', '860 members', Icons.smart_toy_rounded, Color(0xFF20C997)),
-    _Club('Debate Circle', '540 members', Icons.record_voice_over_rounded, Color(0xFF4361EE)),
+    _Club(
+      'Photography Club',
+      '1.2k members',
+      Icons.camera_alt_rounded,
+      Color(0xFFEE6C9C),
+    ),
+    _Club(
+      'Robotics Society',
+      '860 members',
+      Icons.smart_toy_rounded,
+      Color(0xFF20C997),
+    ),
+    _Club(
+      'Debate Circle',
+      '540 members',
+      Icons.record_voice_over_rounded,
+      Color(0xFF4361EE),
+    ),
   ];
 
   @override
@@ -36,8 +52,16 @@ class NexEventExplorePoly extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
           children: [
-            const Text('Explore',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: _text)),
+            Text(
+              'Explore',
+              style: GoogleFonts.storyScript(
+                fontSize: 24,
+
+                fontWeight: FontWeight.bold,
+
+                color: Colors.black,
+              ),
+            ),
             const SizedBox(height: 16),
             _searchBar(),
             const SizedBox(height: 22),
@@ -59,12 +83,18 @@ class NexEventExplorePoly extends StatelessWidget {
   Widget _searchBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(18)),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Row(
         children: const [
           Icon(Icons.search_rounded, color: _muted, size: 20),
           SizedBox(width: 10),
-          Text('Search events, clubs, people…', style: TextStyle(color: _muted, fontSize: 14)),
+          Text(
+            'Search events, clubs, people…',
+            style: TextStyle(color: _muted, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -91,7 +121,14 @@ class NexEventExplorePoly extends StatelessWidget {
                 child: Icon(c.icon, color: c.color, size: 24),
               ),
               const SizedBox(height: 6),
-              Text(c.label, style: const TextStyle(fontSize: 11, color: _text, fontWeight: FontWeight.w600)),
+              Text(
+                c.label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: _text,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           );
         },
@@ -102,9 +139,23 @@ class NexEventExplorePoly extends StatelessWidget {
   Widget _sectionHeader(String title) {
     return Row(
       children: [
-        Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: _text)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.w700,
+            color: _text,
+          ),
+        ),
         const Spacer(),
-        const Text('See all', style: TextStyle(fontSize: 13, color: _primary, fontWeight: FontWeight.w600)),
+        const Text(
+          'See all',
+          style: TextStyle(
+            fontSize: 13,
+            color: _primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -133,20 +184,37 @@ class NexEventExplorePoly extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text('Trending',
-                      style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
+                  child: const Text(
+                    'Trending',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 const Spacer(),
-                Text(t.title,
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                Text(
+                  t.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text(t.host, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(
+                  t.host,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
               ],
             ),
           );
@@ -159,13 +227,19 @@ class NexEventExplorePoly extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(18)),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Row(
         children: [
           Container(
             width: 44,
             height: 44,
-            decoration: BoxDecoration(color: c.color.withOpacity(0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: c.color.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
             child: Icon(c.icon, color: c.color, size: 20),
           ),
           const SizedBox(width: 12),
@@ -173,8 +247,18 @@ class NexEventExplorePoly extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _text)),
-                Text(c.members, style: const TextStyle(fontSize: 12, color: _muted)),
+                Text(
+                  c.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: _text,
+                  ),
+                ),
+                Text(
+                  c.members,
+                  style: const TextStyle(fontSize: 12, color: _muted),
+                ),
               ],
             ),
           ),
@@ -184,14 +268,19 @@ class NexEventExplorePoly extends StatelessWidget {
               color: c.color,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Text('Join', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Join',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
-
- 
 }
 
 class _Category {

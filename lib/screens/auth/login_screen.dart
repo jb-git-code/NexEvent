@@ -4,6 +4,7 @@ import 'package:nexevent/screens/auth/password_recovery.dart';
 import 'package:nexevent/screens/home/home_page.dart';
 import 'package:nexevent/screens/auth/signup_screen.dart';
 import 'package:nexevent/services/auth_service.dart';
+import 'package:nexevent/ui/new_home_page.dart';
 
 class loginScreen extends StatefulWidget {
   const loginScreen({super.key});
@@ -24,7 +25,7 @@ class _loginScreenState extends State<loginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => NewHomePage()),
         (route) => false,
       );
     } on FirebaseAuthException catch (e) {

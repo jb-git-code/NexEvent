@@ -2,14 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/models/event_model.dart';
 import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/screens/admin/edit_event_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
 import 'package:nexevent/services/notification_service.dart';
-import 'package:nexevent/theme/app_theme.dart';
 import 'package:uuid/uuid.dart';
+import 'package:nexevent/widgets/grid_background.dart';
 
 class EventDetailPage extends StatefulWidget {
   const EventDetailPage({
@@ -118,367 +117,376 @@ class _EventDetailPageState extends State<EventDetailPage> {
     loadRole();
   }
 
-  Color _statusColor(BuildContext context, String status) {
-    final colors = AppColors.of(context);
+  Color _statusColor(String status) {
     final s = status.toLowerCase();
-    if (s.contains('live') || s.contains('ongoing')) return colors.success;
-    if (s.contains('upcoming')) return colors.primary;
-    if (s.contains('cancel')) return colors.error;
-    return colors.textTertiary;
+    if (s.contains('live') || s.contains('ongoing')) {
+      return const Color(0xFF16A34A);
+    }
+    if (s.contains('upcoming')) return const Color(0xFF4F46E5);
+    if (s.contains('cancel')) return const Color(0xFFEF4444);
+    return const Color(0xFF64748B);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
     final statusColor = widget.isCancelled
-        ? colors.error
-        : _statusColor(context, widget.status);
+        ? const Color(0xFFEF4444)
+        : _statusColor(widget.status);
     final statusLabel = widget.isCancelled ? 'Cancelled' : widget.status;
     final dateText = widget.endDateText.isNotEmpty
         ? '${widget.eventDateText} → ${widget.endDateText}'
         : widget.eventDateText;
 
     return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(title: const Text('Event Details'), centerTitle: true),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: colors.primary,
-              ),
-            )
-          : SafeArea(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ---- Poster image with status overlay ----
-                          // Image only lives on this detail screen, not the list.
-                          Container(
-                            width: double.infinity,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: colors.border,
-                                width: 1,
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text(
+          'Event Details',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      body: GridDotBackground(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2.4))
+            : SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ---- Poster image with status overlay ----
+                            Container(
+                              width: double.infinity,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: const Color(0xFFEFF1F4),
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x08000000),
+                                    blurRadius: 14,
+                                    offset: Offset(0, 6),
+                                  ),
+                                ],
                               ),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                (widget.imageUrl.isNotEmpty)
-                                    ? CachedNetworkImage(
-                                        imageUrl: widget.imageUrl,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) => Center(
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: colors.primary,
+                              clipBehavior: Clip.antiAlias,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  (widget.imageUrl.isNotEmpty)
+                                      ? CachedNetworkImage(
+                                          imageUrl: widget.imageUrl,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: Color(0xFF111111),
+                                                    ),
+                                              ),
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(
+                                                Icons.broken_image_rounded,
+                                                size: 28,
+                                              ),
+                                        )
+                                      : Container(
+                                          color: const Color(0xFFEEF2FF),
+                                          child: const Icon(
+                                            Icons.event_note_rounded,
+                                            color: Color(0xFF7C4DFF),
+                                            size: 48,
                                           ),
                                         ),
-                                        errorWidget: (context, url, error) =>
+
+                                  // status chip
+                                  if (statusLabel.isNotEmpty)
+                                    Positioned(
+                                      top: 12,
+                                      left: 12,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 11,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x14000000),
+                                              blurRadius: 8,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
                                             Container(
-                                              color: colors.surfaceAlt,
-                                              child: Icon(
-                                                LucideIcons.imageOff,
-                                                size: 28,
-                                                color: colors.textTertiary,
+                                              width: 6,
+                                              height: 6,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: statusColor,
                                               ),
                                             ),
-                                      )
-                                    : Container(
-                                        color: colors.primaryMuted,
-                                        child: Icon(
-                                          LucideIcons.calendarDays,
-                                          color: colors.primary,
-                                          size: 44,
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              statusLabel,
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: statusColor,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-
-                                // status chip
-                                if (statusLabel.isNotEmpty)
-                                  Positioned(
-                                    top: 12,
-                                    left: 12,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: colors.surface,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Container(
-                                            width: 6,
-                                            height: 6,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: statusColor,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            statusLabel,
-                                            style: text.caption.copyWith(
-                                              color: statusColor,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+
+                            // ---- Title ----
+                            Text(
+                              widget.name,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF111111),
+                                letterSpacing: -0.5,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // ---- Location + Date info strip ----
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _infoTile(
+                                    icon: Icons.place_outlined,
+                                    label: 'LOCATION',
+                                    value: widget.venue,
                                   ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _infoTile(
+                                    icon: Icons.calendar_today_rounded,
+                                    label: 'DATE',
+                                    value: dateText.isNotEmpty
+                                        ? dateText
+                                        : 'TBA',
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 18),
 
-                          // ---- Title ----
-                          Text(widget.name, style: text.h2),
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 22),
+                            const Divider(color: Color(0xFFE2E8F0), height: 1),
+                            const SizedBox(height: 18),
 
-                          // ---- Location + Date info strip ----
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: _infoTile(
-                                  context,
-                                  icon: LucideIcons.mapPin,
-                                  label: 'LOCATION',
-                                  value: widget.venue,
-                                ),
+                            // ---- About ----
+                            const Text(
+                              'ABOUT THIS EVENT',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF94A3B8),
+                                letterSpacing: 0.8,
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _infoTile(
-                                  context,
-                                  icon: LucideIcons.calendar,
-                                  label: 'DATE',
-                                  value: dateText.isNotEmpty ? dateText : 'TBA',
-                                ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              widget.description.isNotEmpty
+                                  ? widget.description
+                                  : 'No description available for this event.',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1.55,
+                                color: Color(0xFF475569),
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 22),
-                          Divider(color: colors.divider, height: 1),
-                          const SizedBox(height: 18),
-
-                          // ---- About ----
-                          Text('ABOUT THIS EVENT', style: text.label),
-                          const SizedBox(height: 8),
-                          Text(
-                            widget.description.isNotEmpty
-                                ? widget.description
-                                : 'No description available for this event.',
-                            style: text.bodySecondary.copyWith(height: 1.55),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  // Bottom Action Bar
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 14.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.surface,
-                      border: Border(
-                        top: BorderSide(color: colors.border, width: 1),
+                    // Bottom Action Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 14.0,
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        if (role == 'admin') ...[
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFEFF1F4), width: 1.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          if (role == 'admin') ...[
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  side: const BorderSide(
+                                    color: Color(0xFFD1D5DB),
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditEventPage(
+                                        docId: widget.did,
+                                        map: EventModel(
+                                          eventId: widget.eventId,
+                                          name: widget.name,
+                                          description: widget.description,
+                                          venue: widget.venue,
+                                          category: 'event',
+                                          imageUrl: widget.imageUrl,
+                                          eventDate:
+                                              parseFormattedDate(
+                                                widget.eventDateText,
+                                              ) ??
+                                              DateTime.now(),
+                                          endDate:
+                                              parseFormattedDate(
+                                                widget.endDateText,
+                                              ) ??
+                                              DateTime.now(),
+                                          isCancelled: false,
+                                        ).toMap(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Update',
+                                  style: TextStyle(
+                                    color: Color(0xFF111111),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
                           Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF111111),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
                                 ),
-                                side: BorderSide(
-                                  color: colors.border,
-                                  width: 1,
-                                ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditEventPage(
-                                      docId: widget.did,
-                                      map: EventModel(
-                                        eventId: widget.eventId,
-                                        name: widget.name,
-                                        description: widget.description,
-                                        venue: widget.venue,
-                                        category: 'event',
-                                        imageUrl: widget.imageUrl,
-                                        eventDate:
-                                            parseFormattedDate(
-                                              widget.eventDateText,
-                                            ) ??
-                                            DateTime.now(),
-                                        endDate:
-                                            parseFormattedDate(
-                                              widget.endDateText,
-                                            ) ??
-                                            DateTime.now(),
-                                        isCancelled: false,
-                                      ).toMap(),
+                              onPressed: () async {
+                                final uid =
+                                    FirebaseAuth.instance.currentUser!.uid;
+
+                                final query = await FirebaseFirestore.instance
+                                    .collection("registrations")
+                                    .where("userId", isEqualTo: uid)
+                                    .where("eventId", isEqualTo: widget.eventId)
+                                    .get();
+
+                                if (query.docs.isEmpty) {
+                                  final regId = const Uuid().v4();
+                                  await FirestoreService().registerEvent(
+                                    RegistrationModel(
+                                      registrationId: regId,
+                                      eventId: widget.eventId,
+                                      userId: uid,
+                                      attented: false,
                                     ),
-                                  ),
-                                );
+                                  );
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Registered Successfully!",
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  await NotificationService()
+                                      .showRegistrationSuccess(widget.name);
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Already Registered"),
+                                      ),
+                                    );
+                                  }
+                                }
                               },
-                              child: Text(
-                                'Update',
-                                style: text.bodyMedium.copyWith(
-                                  color: colors.textPrimary,
-                                  fontWeight: FontWeight.w600,
+                              child: const Text(
+                                "Register",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
                         ],
-                        (widget.status == 'Live' || widget.status == 'Upcoming')
-                            ? Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    final uid =
-                                        FirebaseAuth.instance.currentUser!.uid;
-
-                                    final query = await FirebaseFirestore
-                                        .instance
-                                        .collection("registrations")
-                                        .where("userId", isEqualTo: uid)
-                                        .where(
-                                          "eventId",
-                                          isEqualTo: widget.eventId,
-                                        )
-                                        .get();
-
-                                    if (query.docs.isEmpty) {
-                                      final regId = const Uuid().v4();
-                                      await FirestoreService().registerEvent(
-                                        RegistrationModel(
-                                          registrationId: regId,
-                                          eventId: widget.eventId,
-                                          userId: uid,
-                                          attented: false,
-                                        ),
-                                      );
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Registered Successfully!",
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      await NotificationService()
-                                          .showRegistrationSuccess(widget.name);
-                                    } else {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Already Registered"),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                  child: const Text('Register'),
-                                ),
-                              )
-                            : Expanded(
-                                child: ElevatedButton(
-                                  onPressed:
-                                      null, // null = disabled, unclickable
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: colors.surfaceAlt,
-                                    disabledBackgroundColor: colors.surfaceAlt,
-                                    disabledForegroundColor:
-                                        colors.textTertiary,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        LucideIcons.lock,
-                                        size: 16,
-                                        color: colors.textTertiary,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'Registration Closed',
-                                        style: text.bodyMedium.copyWith(
-                                          color: colors.textTertiary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 
-  Widget _infoTile(
-    BuildContext context, {
+  Widget _infoTile({
     required IconData icon,
     required String label,
     required String value,
   }) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.border, width: 1),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEFF1F4), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,22 +494,31 @@ class _EventDetailPageState extends State<EventDetailPage> {
           Container(
             width: 32,
             height: 32,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: colors.primaryMuted,
+              color: Color(0xFFEEF2FF),
             ),
-            child: Icon(icon, color: colors.primary, size: 16),
+            child: Icon(icon, color: const Color(0xFF7C4DFF), size: 16),
           ),
           const SizedBox(height: 10),
-          Text(label, style: text.label.copyWith(fontSize: 9.5)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF94A3B8),
+              letterSpacing: 0.6,
+            ),
+          ),
           const SizedBox(height: 3),
           Text(
             value,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: text.bodyMedium.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF111111),
               height: 1.3,
             ),
           ),

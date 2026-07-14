@@ -1,14 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nexevent/models/event_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/home/event_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
-import 'package:nexevent/services/storage_services.dart';
-import 'package:nexevent/theme/app_theme.dart';
 
+/// Insti Feed — big poster-card feed screen (matches the reference design).
+/// Each card = full-bleed event poster → colored community strip → meta.
 class EventsPage extends ConsumerStatefulWidget {
   const EventsPage({super.key});
 
@@ -17,226 +18,69 @@ class EventsPage extends ConsumerStatefulWidget {
 }
 
 class _EventsPageState extends ConsumerState<EventsPage> {
-  String selectedFilter = 'All';
+  static const _bg = Color(0xFFF8FAFC);
+  static const _primary = Color(0xFF4361EE);
+  static const _text = Color(0xFF14151A);
+  static const _muted = Color(0xFF64748B);
+  static const _navBg = Color(0xFF232742);
 
-  Future<void> deleteEv(String eid) async {
-    await FirestoreService().deleteEvent(eid);
-  }
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-    final currUser = ref.watch(currentUserProvider);
-    // final role = currUser?.role ?? 'student';
-    // final role = 'admin';
+    ref.watch(currentUserProvider); // kept for parity with EventsPage
 
     return Scaffold(
-      backgroundColor: colors.background,
-      body: StreamBuilder(
-        stream: FirestoreService().getEvents("events"),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: colors.primary,
-              ),
-            );
-          }
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: colors.primary,
-              ),
-            );
-          }
-
-          final allDocs = snapshot.data!.docs;
-
-          // Dynamic category count map
-          int allCount = allDocs.length;
-          int techCount = 0;
-          int musicCount = 0;
-          int sportsCount = 0;
-          int artsCount = 0;
-
-          for (var d in allDocs) {
-            final map = d.data() as Map<String, dynamic>;
-            final cat = (map["category"] ?? "").toString().toLowerCase().trim();
-            if (cat.contains("tech") ||
-                cat.contains("code") ||
-                cat.contains("hack") ||
-                cat.contains("dev")) {
-              techCount++;
-            } else if (cat.contains("music") ||
-                cat.contains("party") ||
-                cat.contains("concert") ||
-                cat.contains("dance") ||
-                cat.contains("fest")) {
-              musicCount++;
-            } else if (cat.contains("sport") ||
-                cat.contains("fit") ||
-                cat.contains("gym") ||
-                cat.contains("play") ||
-                cat.contains("health")) {
-              sportsCount++;
-            } else if (cat.contains("art") ||
-                cat.contains("culture") ||
-                cat.contains("exhibit") ||
-                cat.contains("paint") ||
-                cat.contains("design")) {
-              artsCount++;
-            }
-          }
-
-          // Filter document list based on selection
-          final filteredDocs = allDocs.where((d) {
-            if (selectedFilter == 'All') return true;
-            final map = d.data() as Map<String, dynamic>;
-            final cat = (map["category"] ?? "").toString().toLowerCase().trim();
-
-            if (selectedFilter == 'Tech') {
-              return cat.contains("tech") ||
-                  cat.contains("code") ||
-                  cat.contains("hack") ||
-                  cat.contains("dev");
-            }
-            if (selectedFilter == 'Music') {
-              return cat.contains("music") ||
-                  cat.contains("party") ||
-                  cat.contains("concert") ||
-                  cat.contains("dance") ||
-                  cat.contains("fest");
-            }
-            if (selectedFilter == 'Sports') {
-              return cat.contains("sport") ||
-                  cat.contains("fit") ||
-                  cat.contains("gym") ||
-                  cat.contains("play") ||
-                  cat.contains("health");
-            }
-            if (selectedFilter == 'Arts') {
-              return cat.contains("art") ||
-                  cat.contains("culture") ||
-                  cat.contains("exhibit") ||
-                  cat.contains("paint") ||
-                  cat.contains("design");
-            }
-            return true;
-          }).toList();
-
-          return SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                // Category filter pills
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: [
-                      _buildFilterPill(context, 'All', allCount),
-                      _buildFilterPill(context, 'Tech', techCount),
-                      _buildFilterPill(context, 'Music', musicCount),
-                      _buildFilterPill(context, 'Sports', sportsCount),
-                      _buildFilterPill(context, 'Arts', artsCount),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                if (filteredDocs.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 60.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: colors.surfaceAlt,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            LucideIcons.calendarOff,
-                            size: 32,
-                            color: colors.textTertiary,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'No matches found in this category',
-                          style: text.bodySecondary,
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  ...List.generate(filteredDocs.length, (index) {
-                    final doc = filteredDocs[index];
-                    final data = doc.data() as Map<String, dynamic>;
-                    final event = EventModel.fromMap(data);
-                    final status = FirestoreService().getStatus(event);
-
-                    return _buildEventCardItem(
-                      context,
-                      doc.id,
-                      data,
-                      status,
-                      currUser!.role,
-                    );
-                  }),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFilterPill(BuildContext context, String filterName, int count) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-    final isSelected = selectedFilter == filterName;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedFilter = filterName;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 8.0),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          color: isSelected ? colors.primary : colors.surface,
-          border: Border.all(
-            color: isSelected ? colors.primary : colors.border,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Column(
           children: [
-            Text(
-              filterName,
-              style: text.bodyMedium.copyWith(
-                color: isSelected ? colors.onPrimary : colors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              '$count',
-              style: text.caption.copyWith(
-                color: isSelected
-                    ? colors.onPrimary.withValues(alpha: 0.75)
-                    : colors.textTertiary,
-                fontWeight: FontWeight.w600,
+            _titleBar(),
+            const SizedBox(height: 14),
+            _searchBar(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: StreamBuilder(
+                stream: FirestoreService().getEvents("events"),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs.where((d) {
+                    if (_query.isEmpty) return true;
+                    final map = d.data() as Map<String, dynamic>;
+                    final name = (map['name'] ?? '').toString().toLowerCase();
+                    return name.contains(_query.toLowerCase());
+                  }).toList();
+
+                  if (docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No events found',
+                        style: TextStyle(
+                          color: _muted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: docs.length,
+                    itemBuilder: (context, i) {
+                      final doc = docs[i];
+                      final data = doc.data() as Map<String, dynamic>;
+                      final event = EventModel.fromMap(data);
+                      final status = FirestoreService().getStatus(event);
+                      return _posterCard(context, doc.id, data, status);
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -245,7 +89,264 @@ class _EventsPageState extends ConsumerState<EventsPage> {
     );
   }
 
-  // Formats a Firestore Timestamp / DateTime into "Jun 27, 2026 • 8:47 PM"
+  Widget _titleBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Center(
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'College ',
+                style: GoogleFonts.storyScript(
+                  fontSize: 24,
+
+                  fontWeight: FontWeight.bold,
+
+                  color: Colors.black,
+                ),
+              ),
+              TextSpan(
+                text: 'Feed',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: _primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _searchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: _text, width: 1.4),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search_rounded, color: _text, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                onChanged: (v) => setState(() => _query = v),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Search events...',
+                  hintStyle: TextStyle(color: _muted, fontSize: 14),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+                style: const TextStyle(fontSize: 14, color: _text),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _posterCard(
+    BuildContext context,
+    String docId,
+    Map<String, dynamic> data,
+    String status,
+  ) {
+    final eventName = data['name'] ?? 'Untitled Event';
+    final venue = data['venue'] ?? 'TBD';
+    final imageUrl = data['imageUrl'] ?? '';
+    final isCancelled = data['isCancelled'] == true;
+
+    // Community/club info — adjust these field names to match your schema.
+    final communityName =
+        data['organizerName'] ?? data['clubName'] ?? 'Community';
+    final communityLogo = data['organizerLogo'] ?? data['clubLogo'] ?? '';
+
+    final dateLabel = _formatDate(data['eventDate']);
+    final displayStatus = isCancelled ? 'Cancelled' : status;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(
+                name: eventName,
+                eventId: data['eventId'] ?? '',
+                venue: venue,
+                description: data['description'] ?? '',
+                did: docId,
+                imageUrl: imageUrl,
+                status: status,
+                isCancelled: isCancelled,
+                eventDateText: dateLabel,
+                endDateText: '',
+              ),
+            ),
+          );
+        },
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Poster image ──────────────────────────────
+              AspectRatio(
+                aspectRatio: 1,
+                child: imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: _text,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: Colors.white54,
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: _text,
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image_rounded,
+                              size: 34,
+                              color: Colors.white38,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: _text,
+                        child: const Center(
+                          child: Icon(
+                            Icons.bolt_rounded,
+                            size: 46,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ),
+              ),
+
+              // ── Community strip ───────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                color: _primary,
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundColor: Colors.white,
+                      backgroundImage: communityLogo.isNotEmpty
+                          ? CachedNetworkImageProvider(communityLogo)
+                          : null,
+                      child: communityLogo.isEmpty
+                          ? const Icon(
+                              Icons.groups_rounded,
+                              size: 14,
+                              color: _primary,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        communityName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Meta: date/status + title ─────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$dateLabel | $displayStatus',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: isCancelled ? Colors.red : _muted,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      eventName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _text,
+                        height: 1.25,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // row can be removed here
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            data['description'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: _muted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String _formatDate(dynamic ts) {
     DateTime? dt;
     if (ts is Timestamp) {
@@ -254,7 +355,6 @@ class _EventsPageState extends ConsumerState<EventsPage> {
       dt = ts;
     }
     if (dt == null) return 'Date TBA';
-
     const months = [
       'Jan',
       'Feb',
@@ -272,189 +372,6 @@ class _EventsPageState extends ConsumerState<EventsPage> {
     final hour12 = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
     final period = dt.hour >= 12 ? 'PM' : 'AM';
     final minute = dt.minute.toString().padLeft(2, '0');
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year} • $hour12:$minute $period';
-  }
-
-  // Color for the status chip (live / upcoming / completed / cancelled)
-  Color _statusColor(BuildContext context, String status) {
-    final colors = AppColors.of(context);
-    final s = status.toLowerCase();
-    if (s.contains('live') || s.contains('ongoing')) return colors.success;
-    if (s.contains('upcoming')) return colors.primary;
-    if (s.contains('cancel')) return colors.error;
-    return colors.textTertiary; // completed / default
-  }
-
-  Widget _buildEventCardItem(
-    BuildContext context,
-    String docId,
-    Map<String, dynamic> data,
-    String status,
-    String role,
-  ) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
-    final eventName = data["name"] ?? 'Untitled Event';
-    final eventVenue = data["venue"] ?? 'TBD';
-    final imageUrl = data["imageUrl"] ?? '';
-    final category = (data["category"] ?? 'General').toString();
-    final isCancelled = data["isCancelled"] == true;
-
-    final eventDateStr = _formatDate(data["eventDate"]);
-    final endDateStr = _formatDate(data["endDate"]);
-    final showEndDate = data["endDate"] != null && endDateStr != eventDateStr;
-    final statusColor = isCancelled
-        ? colors.error
-        : _statusColor(context, status);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EventDetailPage(
-                name: eventName,
-                eventId: data["eventId"] ?? '',
-                venue: eventVenue,
-                description: data["description"] ?? '',
-                did: docId,
-                imageUrl: imageUrl,
-                status: status,
-                isCancelled: isCancelled,
-                eventDateText: eventDateStr,
-                endDateText: showEndDate ? endDateStr : '',
-              ),
-            ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.border, width: 1),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            eventName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.h3,
-                          ),
-                        ),
-                        if (role == 'admin') ...[
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => _confirmDelete(context, docId),
-                            child: Icon(
-                              LucideIcons.trash2,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-
-                    Row(
-                      children: [
-                        const SizedBox(width: 4),
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: statusColor,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          isCancelled ? 'Cancelled' : status,
-                          style: text.caption.copyWith(
-                            color: statusColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          LucideIcons.info,
-                          size: 13,
-                          color: colors.textTertiary,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            'Tap the card for more info',
-                            style: text.caption.copyWith(
-                              color: colors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, String docId) {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: colors.surface,
-        title: Text('Delete Event?', style: text.h3),
-        content: Text(
-          'Are you sure you want to permanently delete this event?',
-          style: text.bodySecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: text.bodyMedium.copyWith(color: colors.textSecondary),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              deleteEv(docId);
-              StorageService().deletePoster(docId);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'Delete',
-              style: text.bodyMedium.copyWith(color: colors.error),
-            ),
-          ),
-        ],
-      ),
-    );
+    return '${months[dt.month - 1]} ${dt.day}, $hour12:$minute $period';
   }
 }

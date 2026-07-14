@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:nexevent/screens/home/home_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/services/auth_service.dart';
+import 'package:nexevent/ui/new_home_page.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -331,7 +332,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         Navigator.pushAndRemoveUntil(
                           context,
 
-                          MaterialPageRoute(builder: (_) => const HomePage()),
+                          MaterialPageRoute(builder: (_) => const NewHomePage()),
 
                           (route) => false,
                         );

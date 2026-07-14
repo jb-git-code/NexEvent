@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/community/community_detail_page.dart';
+import 'package:nexevent/screens/home/profile_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
-import 'package:nexevent/theme/app_theme.dart';
 
 // final likeProvider = StateProvider<bool> ((ref){
 
@@ -22,33 +20,21 @@ class AllAnnouncements extends ConsumerStatefulWidget {
 class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
   bool isPinned = false;
   Future<void> _confirmDelete(String docId) async {
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete Announcement', style: text.h3),
-        content: Text(
-          'This action cannot be undone. Continue?',
-          style: text.bodySecondary,
-        ),
+        title: const Text('Delete Announcement'),
+        content: const Text('This action cannot be undone. Continue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              'Cancel',
-              style: text.bodyMedium.copyWith(color: colors.textSecondary),
-            ),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              'Delete',
-              style: text.bodyMedium.copyWith(color: colors.error),
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -58,13 +44,10 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
       await FirestoreService().deleteAnnouncemnt(docId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: colors.textPrimary,
-          content: Text(
-            'Announcement deleted',
-            style: TextStyle(color: colors.background),
-          ),
+          backgroundColor: Colors.black87,
+          content: Text('Announcement deleted'),
         ),
       );
     }
@@ -106,31 +89,31 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
 
   @override
   Widget build(BuildContext context) {
-    print('current user -> ${FirebaseAuth.instance.currentUser}');
-    final colors = AppColors.of(context);
-    final text = AppTextStyles.of(context);
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(title: const Text('Announcements')),
+      backgroundColor: const Color(0xFFFAFAFA),
+      appBar: AppBar(
+        title: const Text(
+          'Announcements',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: const Color(0xFFFAFAFA),
+        elevation: 0,
+        foregroundColor: Colors.black87,
+      ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('announcements')
-            // .where("channelId", isEqualTo: "photography_club")
             .orderBy("isPinned", descending: true)
             .orderBy("createdAt", descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(color: colors.primary),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(color: colors.primary),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           final docs = snapshot.data!.docs;
@@ -141,16 +124,23 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    LucideIcons.calendarOff,
-                    size: 48,
-                    color: colors.textTertiary,
+                    Icons.event_busy_rounded,
+                    size: 64,
+                    color: Colors.grey[300],
                   ),
-                  const SizedBox(height: 14),
-                  Text('No Announcements Yet', style: text.bodyMedium),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No Announcements Yet',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[500],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     'Check back later for exciting updates!',
-                    style: text.caption,
+                    style: TextStyle(fontSize: 13, color: Colors.grey[400]),
                   ),
                 ],
               ),
@@ -161,9 +151,8 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              final doc = docs[index].data();
+              final doc = docs[index].data() as Map<String, dynamic>;
               final docId = docs[index].id;
-              final bool pinned = doc["isPinned"] ?? false;
 
               return GestureDetector(
                 onTap: () {
@@ -172,7 +161,9 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                     MaterialPageRoute(
                       builder: (context) => AnnouncementDetailPage(
                         announcementId: doc["id"],
+
                         title: doc["title"],
+
                         content: doc["content"],
                       ),
                     ),
@@ -180,25 +171,51 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: colors.surface,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: colors.border, width: 1),
+                    border: Border.all(color: Colors.grey.shade200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          (doc["isPinned"])
+                              ? IconButton(
+                                  onPressed: () {
+                                    togglePin(doc["id"], doc["isPinned"]);
+                                  },
+                                  color: Colors.orange,
+                                  icon: Icon(Icons.push_pin),
+                                )
+                              : IconButton(
+                                  onPressed: () {
+                                    togglePin(doc["id"], doc["isPinned"]);
+                                  },
+                                  icon: Icon(Icons.push_pin),
+                                ),
+                        ],
+                      ),
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: colors.warning.withValues(alpha: 0.12),
+                          color: Colors.orange.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          LucideIcons.megaphone,
-                          color: colors.warning,
-                          size: 20,
+                        child: const Icon(
+                          Icons.campaign_rounded,
+                          color: Colors.deepOrange,
+                          size: 22,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -208,46 +225,84 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                           children: [
                             Text(
                               doc["title"] ?? '',
-                              style: text.bodyLarge.copyWith(
-                                fontWeight: FontWeight.w600,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               doc["content"] ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: text.bodySecondary.copyWith(height: 1.4),
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: Colors.grey[600],
+                                height: 1.4,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Column(
                         children: [
-                          GestureDetector(
-                            onTap: () => togglePin(doc["id"], pinned),
-                            child: Icon(
-                              LucideIcons.pin,
-                              size: 18,
-                              color: pinned
-                                  ? colors.warning
-                                  : colors.textTertiary,
-                            ),
+                          Icon(Icons.favorite, color: Colors.red),
+                          StreamBuilder(
+                            stream: FirebaseFirestore.instance
+                                .collection("announcements")
+                                .doc(doc["id"])
+                                .collection("likes")
+                                .snapshots(),
+
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Text("0");
+                              }
+
+                              return Text(
+                                snapshot.data!.docs.length.toString(),
+                              );
+                            },
                           ),
-                          if (user?.role == 'admin') ...[
-                            const SizedBox(height: 14),
-                            GestureDetector(
-                              onTap: () => _confirmDelete(docId),
-                              child: Icon(
-                                LucideIcons.trash2,
-                                size: 18,
-                                color: colors.error,
-                              ),
-                            ),
-                          ],
                         ],
                       ),
+                      const SizedBox(width: 25),
+                      Column(
+                        children: [
+                          Icon(Icons.messenger, color: Colors.blue),
+                          StreamBuilder(
+                            stream: FirebaseFirestore.instance
+                                .collection("announcements")
+                                .doc(doc["id"])
+                                .collection("comments")
+                                .snapshots(),
+
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Text("0");
+                              }
+
+                              return Text(
+                                snapshot.data!.docs.length.toString(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(width: 25),
+                      if (user?.role == 'admin')
+                        InkWell(
+                          onTap: () => _confirmDelete(docId),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.redAccent,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),

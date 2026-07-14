@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NexEventCommunitiesPoly extends StatelessWidget {
   const NexEventCommunitiesPoly({super.key});
@@ -64,12 +65,14 @@ class NexEventCommunitiesPoly extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
           children: [
-            const Text(
-              'Communities',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: _text,
+            Text(
+              'Community',
+              style: GoogleFonts.storyScript(
+                fontSize: 24,
+
+                fontWeight: FontWeight.bold,
+
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 20),
