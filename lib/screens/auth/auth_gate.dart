@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/screens/home/home_page.dart';
+import 'package:nexevent/ui/new_home_page.dart';
 import 'login_screen.dart';
 
 final authStateProvider = StreamProvider(
@@ -18,7 +19,7 @@ class AuthGate extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user != null) {
-          return HomePage();
+          return NewHomePage();
         }
 
         return loginScreen();

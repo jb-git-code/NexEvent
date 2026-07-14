@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/services/post_service.dart';
+import 'package:nexevent/theme/app_theme.dart';
 import 'package:uuid/uuid.dart';
 
 class CreatePost extends ConsumerStatefulWidget {
@@ -117,21 +119,15 @@ class _CreatePostState extends ConsumerState<CreatePost> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final text = AppTextStyles.of(context);
+
     final canPost =
         !isUploadingImage && !isPosting && selectedImage != null && img != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Text(
-          'Create Post',
-          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
+      backgroundColor: colors.background,
+      appBar: AppBar(title: const Text('Create Post'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -146,15 +142,9 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                   height: 240,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: const Color(0xFFE2E8F0),
-                      width: 1.5,
-                      style: selectedImage == null
-                          ? BorderStyle.solid
-                          : BorderStyle.solid,
-                    ),
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: colors.border, width: 1),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
@@ -168,32 +158,27 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                           children: [
                             Container(
                               padding: const EdgeInsets.all(16),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEEF2FF),
+                              decoration: BoxDecoration(
+                                color: colors.primaryMuted,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
-                                Icons.add_photo_alternate_outlined,
-                                color: Color(0xFF7C4DFF),
-                                size: 30,
+                              child: Icon(
+                                LucideIcons.imagePlus,
+                                color: colors.primary,
+                                size: 26,
                               ),
                             ),
                             const SizedBox(height: 14),
-                            const Text(
+                            Text(
                               'Tap to add a photo',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF111111),
+                              style: text.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'JPG or PNG from your gallery',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[500],
-                              ),
+                              style: text.caption,
                             ),
                           ],
                         ),
@@ -201,14 +186,14 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                       // upload progress overlay
                       if (isUploadingImage)
                         Container(
-                          color: Colors.black.withOpacity(0.45),
+                          color: Colors.black.withValues(alpha: 0.45),
                           child: const Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
-                                  width: 28,
-                                  height: 28,
+                                  width: 26,
+                                  height: 26,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.6,
                                     color: Colors.white,
@@ -219,7 +204,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                                   'Uploading...',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     fontSize: 12.5,
                                   ),
                                 ),
@@ -239,14 +224,14 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.55),
-                              borderRadius: BorderRadius.circular(14),
+                              color: Colors.black.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  Icons.refresh_rounded,
+                                  LucideIcons.refreshCw,
                                   size: 13,
                                   color: Colors.white,
                                 ),
@@ -256,7 +241,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -270,44 +255,17 @@ class _CreatePostState extends ConsumerState<CreatePost> {
               const SizedBox(height: 24),
 
               // ---- Caption ----
-              const Text(
-                'CAPTION',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF94A3B8),
-                  letterSpacing: 0.8,
-                ),
-              ),
+              Text('CAPTION', style: text.label),
               const SizedBox(height: 8),
               TextField(
                 controller: captionController,
                 maxLines: 4,
                 minLines: 3,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
+                style: text.bodyMedium,
+                decoration: const InputDecoration(
                   hintText: 'Share something about this moment...',
-                  hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13.5),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF111111),
-                      width: 1.5,
-                    ),
-                  ),
                 ),
-                style: const TextStyle(fontSize: 13.5),
               ),
               const SizedBox(height: 28),
 
@@ -317,14 +275,8 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                 child: ElevatedButton(
                   onPressed: canPost ? submitPost : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF111111),
-                    disabledBackgroundColor: const Color(0xFFCBD5E1),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
+                    disabledBackgroundColor: colors.surfaceAlt,
+                    disabledForegroundColor: colors.textTertiary,
                   ),
                   child: isPosting
                       ? const SizedBox(
@@ -335,13 +287,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Share Post',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15.5,
-                          ),
-                        ),
+                      : Text('Share Post', style: text.button),
                 ),
               ),
             ],

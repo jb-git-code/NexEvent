@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/community/community_detail_page.dart';
 import 'package:nexevent/services/firestore_service.dart';
+import 'package:nexevent/theme/app_theme.dart';
 
 // final likeProvider = StateProvider<bool> ((ref){
 
@@ -19,21 +22,33 @@ class AllAnnouncements extends ConsumerStatefulWidget {
 class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
   bool isPinned = false;
   Future<void> _confirmDelete(String docId) async {
+    final colors = AppColors.of(context);
+    final text = AppTextStyles.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Announcement'),
-        content: const Text('This action cannot be undone. Continue?'),
+        title: Text('Delete Announcement', style: text.h3),
+        content: Text(
+          'This action cannot be undone. Continue?',
+          style: text.bodySecondary,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: text.bodyMedium.copyWith(color: colors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(
+              'Delete',
+              style: text.bodyMedium.copyWith(color: colors.error),
+            ),
           ),
         ],
       ),
@@ -43,10 +58,13 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
       await FirestoreService().deleteAnnouncemnt(docId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.black87,
-          content: Text('Announcement deleted'),
+          backgroundColor: colors.textPrimary,
+          content: Text(
+            'Announcement deleted',
+            style: TextStyle(color: colors.background),
+          ),
         ),
       );
     }
@@ -88,19 +106,14 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
 
   @override
   Widget build(BuildContext context) {
+    print('current user -> ${FirebaseAuth.instance.currentUser}');
+    final colors = AppColors.of(context);
+    final text = AppTextStyles.of(context);
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      appBar: AppBar(
-        title: const Text(
-          'Announcements',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        backgroundColor: const Color(0xFFFAFAFA),
-        elevation: 0,
-        foregroundColor: Colors.black87,
-      ),
+      backgroundColor: colors.background,
+      appBar: AppBar(title: const Text('Announcements')),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('announcements')
@@ -110,10 +123,14 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: colors.primary),
+            );
           }
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: colors.primary),
+            );
           }
 
           final docs = snapshot.data!.docs;
@@ -124,23 +141,16 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.event_busy_rounded,
-                    size: 64,
-                    color: Colors.grey[300],
+                    LucideIcons.calendarOff,
+                    size: 48,
+                    color: colors.textTertiary,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No Announcements Yet',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const SizedBox(height: 14),
+                  Text('No Announcements Yet', style: text.bodyMedium),
                   const SizedBox(height: 4),
                   Text(
                     'Check back later for exciting updates!',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                    style: text.caption,
                   ),
                 ],
               ),
@@ -153,6 +163,7 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
             itemBuilder: (context, index) {
               final doc = docs[index].data();
               final docId = docs[index].id;
+              final bool pinned = doc["isPinned"] ?? false;
 
               return GestureDetector(
                 onTap: () {
@@ -161,9 +172,7 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                     MaterialPageRoute(
                       builder: (context) => AnnouncementDetailPage(
                         announcementId: doc["id"],
-
                         title: doc["title"],
-
                         content: doc["content"],
                       ),
                     ),
@@ -171,51 +180,25 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(color: colors.border, width: 1),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          (doc["isPinned"])
-                              ? IconButton(
-                                  onPressed: () {
-                                    togglePin(doc["id"], doc["isPinned"]);
-                                  },
-                                  color: Colors.orange,
-                                  icon: Icon(Icons.push_pin),
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    togglePin(doc["id"], doc["isPinned"]);
-                                  },
-                                  icon: Icon(Icons.push_pin),
-                                ),
-                        ],
-                      ),
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.12),
+                          color: colors.warning.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
-                          Icons.campaign_rounded,
-                          color: Colors.deepOrange,
-                          size: 22,
+                        child: Icon(
+                          LucideIcons.megaphone,
+                          color: colors.warning,
+                          size: 20,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -225,84 +208,46 @@ class _AllAnnouncementsState extends ConsumerState<AllAnnouncements> {
                           children: [
                             Text(
                               doc["title"] ?? '',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
+                              style: text.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               doc["content"] ?? '',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                color: Colors.grey[600],
-                                height: 1.4,
-                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.bodySecondary.copyWith(height: 1.4),
                             ),
                           ],
                         ),
                       ),
-
-                      // Column(
-                      //   children: [
-                      //     Icon(Icons.favorite, color: Colors.red),
-                      //     StreamBuilder(
-                      //       stream: FirebaseFirestore.instance
-                      //           .collection("announcements")
-                      //           .doc(doc["id"])
-                      //           .collection("likes")
-                      //           .snapshots(),
-
-                      //       builder: (context, snapshot) {
-                      //         if (!snapshot.hasData) {
-                      //           return const Text("0");
-                      //         }
-
-                      //         return Text(
-                      //           snapshot.data!.docs.length.toString(),
-                      //         );
-                      //       },
-                      //     ),
-                      //   ],
-                      // ),
-                      // const SizedBox(width: 25),
-                      // Column(
-                      //   children: [
-                      //     Icon(Icons.messenger, color: Colors.blue),
-                      //     StreamBuilder(
-                      //       stream: FirebaseFirestore.instance
-                      //           .collection("announcements")
-                      //           .doc(doc["id"])
-                      //           .collection("comments")
-                      //           .snapshots(),
-
-                      //       builder: (context, snapshot) {
-                      //         if (!snapshot.hasData) {
-                      //           return const Text("0");
-                      //         }
-
-                      //         return Text(
-                      //           snapshot.data!.docs.length.toString(),
-                      //         );
-                      //       },
-                      //     ),
-                      //   ],
-                      // ),
-                      const SizedBox(width: 25),
-                      if (user?.role == 'admin')
-                        InkWell(
-                          onTap: () => _confirmDelete(docId),
-                          borderRadius: BorderRadius.circular(8),
-                          child: const Padding(
-                            padding: EdgeInsets.all(4),
+                      const SizedBox(width: 8),
+                      Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () => togglePin(doc["id"], pinned),
                             child: Icon(
-                              Icons.delete_outline_rounded,
-                              color: Colors.redAccent,
-                              size: 20,
+                              LucideIcons.pin,
+                              size: 18,
+                              color: pinned
+                                  ? colors.warning
+                                  : colors.textTertiary,
                             ),
                           ),
-                        ),
+                          if (user?.role == 'admin') ...[
+                            const SizedBox(height: 14),
+                            GestureDetector(
+                              onTap: () => _confirmDelete(docId),
+                              child: Icon(
+                                LucideIcons.trash2,
+                                size: 18,
+                                color: colors.error,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),

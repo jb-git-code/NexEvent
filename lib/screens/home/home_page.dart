@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/community/college_feed.dart';
@@ -9,6 +10,7 @@ import 'package:nexevent/screens/community/community_page.dart';
 import 'package:nexevent/screens/home/events_page.dart';
 import 'package:nexevent/screens/home/my_events_page.dart';
 import 'package:nexevent/screens/home/profile_page.dart';
+import 'package:nexevent/theme/app_theme.dart';
 import 'package:nexevent/widgets/drawer_widget.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -67,39 +69,28 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final colors = AppColors.of(context);
+    final text = AppTextStyles.of(context);
+
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: colors.primary)),
+      );
     }
 
     final currUser = ref.watch(currentUserProvider);
 
     if (currUser == null) {
-      return const Scaffold(body: Center(child: Text("User not found")));
+      return Scaffold(
+        body: Center(child: Text('User not found', style: text.bodyMedium)),
+      );
     }
 
     final role = currUser.role;
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'NexEvent',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 22,
-                letterSpacing: -0.6,
-                color: Color(0xFF111827),
-              ),
-            ),
-          ],
-        ),
+        title: Text('Nexus', style: text.h2),
         centerTitle: false,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
         actions: [
           if (!isLoading && role != 'student')
             Builder(
@@ -107,15 +98,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: IconButton(
                   style: IconButton.styleFrom(
-                    backgroundColor: primaryColor.withValues(alpha: 0.08),
-                    foregroundColor: primaryColor,
+                    backgroundColor: colors.primaryMuted,
+                    foregroundColor: colors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.all(10),
                   ),
                   onPressed: () => Scaffold.of(innerContext).openEndDrawer(),
-                  icon: const Icon(Icons.menu_rounded),
+                  icon: const Icon(LucideIcons.menu, size: 20),
                 ),
               ),
             ),
@@ -134,28 +125,20 @@ class _HomePageState extends ConsumerState<HomePage> {
         items: const [
           BottomNavigationBarItem(
             label: 'Events',
-            icon: Icon(Icons.event),
-            activeIcon: Icon(Icons.event_available),
+            icon: Icon(LucideIcons.calendar),
           ),
           BottomNavigationBarItem(
             label: 'Explore',
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore_outlined),
+            icon: Icon(LucideIcons.compass),
           ),
-          BottomNavigationBarItem(
-            label: 'Feed',
-            icon: Icon(Icons.feed_outlined),
-            activeIcon: Icon(Icons.feed_rounded),
-          ),
+          BottomNavigationBarItem(label: 'Feed', icon: Icon(LucideIcons.rss)),
           BottomNavigationBarItem(
             label: 'News',
-            icon: Icon(Icons.newspaper),
-            activeIcon: Icon(Icons.newspaper_rounded),
+            icon: Icon(LucideIcons.newspaper),
           ),
           BottomNavigationBarItem(
             label: 'Profile',
-            icon: Icon(Icons.person_outline_rounded),
-            activeIcon: Icon(Icons.person_rounded),
+            icon: Icon(LucideIcons.user),
           ),
         ],
       ),
