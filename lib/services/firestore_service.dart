@@ -47,13 +47,22 @@ class FirestoreService {
         .collection("registrations")
         .doc(registration.registrationId)
         .set(registration.toMap());
+
+    await FirebaseFirestore.instance
+        .collection('events')
+        .doc(registration.eventId)
+        .update({"regisCount": FieldValue.increment(1)});
   }
 
-  Future<void> cancelRegistration(String registrationId) async {
+  Future<void> cancelRegistration(String registrationId, String eventId) async {
     await FirebaseFirestore.instance
         .collection("registrations")
         .doc(registrationId)
         .delete();
+
+    await FirebaseFirestore.instance.collection('events').doc(eventId).update({
+      "regisCount": FieldValue.increment(-1),
+    });
   }
 
   Stream<QuerySnapshot> getUserRegistrations() {

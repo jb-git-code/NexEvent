@@ -2,123 +2,194 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/screens/community/create_post.dart';
+import 'package:nexevent/screens/creative/creative_post.dart';
+import 'package:nexevent/ui/app_colors.dart';
+import 'package:nexevent/ui/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nexevent/models/creative_post_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:nexevent/screens/creative/creative_detail_page.dart';
-import 'package:nexevent/screens/creative/creative_post.dart';
 
-class CreativePage extends ConsumerStatefulWidget {
-  const CreativePage({super.key});
+/// Creative Corner — themed + embeddable.
+///
+/// `CreativeFeed` is the reusable widget: drop it straight inside the
+/// Explore page's ListView (set `embedded: true`, optionally `limit: 3`
+/// for a preview + "See all"). `CreativeCornerPage` is the full standalone
+/// screen it links out to.
+class CreativeFeed extends ConsumerStatefulWidget {
+  /// Cap how many posts to show. Null = show everything (full page use).
+  final int? limit;
+
+  /// When true: no internal scrolling (shrinkWrap + no physics) so this
+  /// can sit inside another scrollable, e.g. the Explore page's ListView.
+  final bool embedded;
+
+  /// Shown above the list when embedded, with a "See all" link.
+  final String sectionTitle;
+
+  const CreativeFeed({
+    super.key,
+    this.limit,
+    this.embedded = false,
+    this.sectionTitle = 'Creative Corner',
+  });
 
   @override
-  ConsumerState<CreativePage> createState() => _CreativePageState();
+  ConsumerState<CreativeFeed> createState() => _CreativeFeedState();
 }
 
-class _CreativePageState extends ConsumerState<CreativePage> {
+class _CreativeFeedState extends ConsumerState<CreativeFeed> {
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(currentUserProvider);
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text(
-          'Creative Corner',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.grey.shade50,
-        foregroundColor: Colors.black,
-      ),
-      floatingActionButton: (user!.role == 'admin')
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CreativePost()),
-                );
-              },
-              icon: const Icon(Icons.note_alt_outlined),
-              label: const Text('New Post'),
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              elevation: 2,
-            )
-          : const SizedBox(),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection("creative_posts")
-            .orderBy("createdAt", descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                "Something went wrong",
-                style: TextStyle(color: Colors.grey.shade600),
+    ref.watch(currentUserProvider); // kept for parity with original page
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection("creative_posts")
+          .orderBy("createdAt", descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _stateMessage(
+            Icons.error_outline_rounded,
+            "Something went wrong",
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                color: AppColors.primary,
               ),
+            ),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+        if (docs.isEmpty) {
+          return _stateMessage(Icons.auto_stories_outlined, "No posts yet");
+        }
+
+        final posts = <CreativePostModel>[];
+        for (final doc in docs) {
+          try {
+            posts.add(
+              CreativePostModel.fromMap(doc.data() as Map<String, dynamic>),
             );
+          } catch (_) {
+            continue;
           }
+        }
+        if (posts.isEmpty) {
+          return _stateMessage(
+            Icons.auto_stories_outlined,
+            "Couldn't load posts",
+          );
+        }
 
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        final shown = widget.limit != null
+            ? posts.take(widget.limit!).toList()
+            : posts;
 
-          final docs = snapshot.data!.docs;
+        final list = ListView.builder(
+          shrinkWrap: widget.embedded,
+          physics: widget.embedded
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
+          padding: EdgeInsets.only(
+            top: widget.embedded ? 0 : 8,
+            bottom: widget.embedded ? 0 : 90,
+          ),
+          itemCount: shown.length,
+          itemBuilder: (context, index) => CreativePostCard(post: shown[index]),
+        );
 
-          if (docs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        if (!widget.embedded) return list;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
                 children: [
-                  Icon(
-                    Icons.auto_stories_outlined,
-                    size: 48,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "No posts yet",
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
+                  Text(widget.sectionTitle, style: AppTextStyles.h2),
+                  const Spacer(),
+                  if (widget.limit != null && posts.length > widget.limit!)
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreativeCornerPage(),
+                        ),
+                      ),
+                      child: Text(
+                        'See all',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
-            );
-          }
+            ),
+            const SizedBox(height: 12),
+            list,
+          ],
+        );
+      },
+    );
+  }
 
-     
-          final posts = <CreativePostModel>[];
-          for (final doc in docs) {
-            try {
-              posts.add(
-                CreativePostModel.fromMap(doc.data() as Map<String, dynamic>),
-              );
-            } catch (_) {
-              continue;
-            }
-          }
+  Widget _stateMessage(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 44, color: AppColors.muted),
+            const SizedBox(height: 12),
+            Text(text, style: AppTextStyles.bodyMuted),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-          if (posts.isEmpty) {
-            return Center(
-              child: Text(
-                "Couldn't load posts",
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-            );
-          }
+/// Full standalone screen — what "See all" navigates to.
+class CreativeCornerPage extends StatelessWidget {
+  const CreativeCornerPage({super.key});
 
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 90),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              return CreativePostCard(post: posts[index]);
-            },
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Creative Corner', style: AppTextStyles.h2),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        foregroundColor: AppColors.text,
+      ),
+      body: const CreativeFeed(),
+      floatingActionButton: TextButton.icon(
+        style: ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(AppColors.accentGreen),
+          foregroundColor: WidgetStatePropertyAll(AppColors.card),
+        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CreativePost()),
           );
         },
+        label: Text('create'),
+        icon: Icon(Icons.create),
       ),
     );
   }
@@ -126,7 +197,6 @@ class _CreativePageState extends ConsumerState<CreativePage> {
 
 class CreativePostCard extends StatelessWidget {
   final CreativePostModel post;
-
   const CreativePostCard({super.key, required this.post});
 
   @override
@@ -134,31 +204,28 @@ class CreativePostCard extends StatelessWidget {
     switch (post.contentType) {
       case "writing":
         return _WritingCard(post);
-
       case "article":
         return _ArticleCard(post);
-
       case "imageGallery":
         return _GalleryCard(post);
-
       default:
         return const SizedBox();
     }
   }
 }
 
-
 Widget _cardWrapper({required Widget child, required VoidCallback onTap}) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.text.withOpacity(0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -178,53 +245,41 @@ Widget _networkImage(String url, {double? height, BoxFit fit = BoxFit.cover}) {
     fit: fit,
     placeholder: (context, _) => Container(
       height: height,
-      color: Colors.grey.shade200,
+      color: AppColors.card,
       child: const Center(
         child: SizedBox(
           height: 22,
           width: 22,
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
+          ),
         ),
       ),
     ),
     errorWidget: (context, _, __) => Container(
       height: height,
-      color: Colors.grey.shade200,
-      child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade400),
+      color: AppColors.card,
+      child: const Icon(Icons.broken_image_outlined, color: AppColors.muted),
     ),
   );
 }
 
-// Widget _engagementRow(CreativePostModel post) {
-//   return Row(
-//     children: [
-//       Icon(Icons.favorite_border, size: 18, color: Colors.grey.shade600),
-//       const SizedBox(width: 5),
-//       Text(
-//         "${post.likeCount}",
-//         style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-//       ),
-//       const SizedBox(width: 18),
-//       Icon(Icons.comment_outlined, size: 18, color: Colors.grey.shade600),
-//       const SizedBox(width: 5),
-//       Text(
-//         "${post.commentCount}",
-//         style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-//       ),
-//     ],
-//   );
-// }
-
 Widget _titleText(String title) {
   return Text(
     title,
-    style: const TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w700,
-      height: 1.2,
-    ),
+    style: AppTextStyles.h3.copyWith(fontSize: 17, height: 1.2),
     maxLines: 2,
     overflow: TextOverflow.ellipsis,
+  );
+}
+
+Widget _descText(String text, int maxLines) {
+  return Text(
+    text,
+    maxLines: maxLines,
+    overflow: TextOverflow.ellipsis,
+    style: AppTextStyles.bodyMuted,
   );
 }
 
@@ -238,7 +293,6 @@ Future<void> _openArticlePdf(
     );
     return;
   }
-
   final uri = Uri.tryParse(post.mediaUrls.first);
   if (uri == null) {
     ScaffoldMessenger.of(
@@ -246,7 +300,6 @@ Future<void> _openArticlePdf(
     ).showSnackBar(const SnackBar(content: Text("Invalid PDF link")));
     return;
   }
-
   final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!launched && context.mounted) {
     ScaffoldMessenger.of(
@@ -255,24 +308,20 @@ Future<void> _openArticlePdf(
   }
 }
 
-
 class _WritingCard extends StatelessWidget {
   final CreativePostModel post;
-
   const _WritingCard(this.post);
 
   @override
   Widget build(BuildContext context) {
     return _cardWrapper(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                CreativeDetailPage(post: post, contentType: 'writing'),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              CreativeDetailPage(post: post, contentType: 'writing'),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -285,46 +334,34 @@ class _WritingCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
             ],
-
             _titleText(post.title),
             const SizedBox(height: 6),
-
-            Text(
-              post.description,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-            ),
-
+            _descText(post.description, 4),
             const SizedBox(height: 14),
-            // _engagementRow(post),
           ],
         ),
       ),
     );
   }
 }
+
 class _ArticleCard extends StatelessWidget {
   final CreativePostModel post;
-
   const _ArticleCard(this.post);
 
   @override
   Widget build(BuildContext context) {
     return _cardWrapper(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                CreativeDetailPage(post: post, contentType: 'article'),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              CreativeDetailPage(post: post, contentType: 'article'),
+        ),
+      ),
       child: Column(
         children: [
           _networkImage(post.coverImage, height: 170),
-
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -332,22 +369,14 @@ class _ArticleCard extends StatelessWidget {
               children: [
                 _titleText(post.title),
                 const SizedBox(height: 6),
-
-                Text(
-                  post.description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-                ),
-
+                _descText(post.description, 3),
                 const SizedBox(height: 14),
-
                 Row(
                   children: [
                     Expanded(
                       child: FilledButton.icon(
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.black,
+                          backgroundColor: AppColors.primary,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -360,9 +389,7 @@ class _ArticleCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 12),
-                // _engagementRow(post),
+                const SizedBox(height: 4),
               ],
             ),
           ),
@@ -372,29 +399,24 @@ class _ArticleCard extends StatelessWidget {
   }
 }
 
-
 class _GalleryCard extends StatelessWidget {
   final CreativePostModel post;
-
   const _GalleryCard(this.post);
 
   @override
   Widget build(BuildContext context) {
     return _cardWrapper(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                CreativeDetailPage(post: post, contentType: 'imageGallery'),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              CreativeDetailPage(post: post, contentType: 'imageGallery'),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _networkImage(post.coverImage, height: 170),
-
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -402,16 +424,8 @@ class _GalleryCard extends StatelessWidget {
               children: [
                 _titleText(post.title),
                 const SizedBox(height: 6),
-
-                Text(
-                  post.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-                ),
-
+                _descText(post.description, 2),
                 const SizedBox(height: 14),
-
                 if (post.mediaUrls.isNotEmpty)
                   SizedBox(
                     height: 90,
@@ -429,7 +443,7 @@ class _GalleryCard extends StatelessWidget {
                               height: 90,
                               imageUrl: post.mediaUrls[index],
                               placeholder: (context, _) => Container(
-                                color: Colors.grey.shade200,
+                                color: AppColors.card,
                                 width: 90,
                                 height: 90,
                               ),
@@ -439,9 +453,7 @@ class _GalleryCard extends StatelessWidget {
                       },
                     ),
                   ),
-
-                const SizedBox(height: 12),
-                // _engagementRow(post),
+                const SizedBox(height: 4),
               ],
             ),
           ),

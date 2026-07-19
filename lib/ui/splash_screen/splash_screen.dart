@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexevent/screens/auth/auth_gate.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 
 // TODO: point these at your real screens once you tell me the class
@@ -45,17 +47,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateNext() async {
+    print('enter navigate next');
     // Small delay so the fade-in is actually visible before we leave.
     await Future.delayed(const Duration(milliseconds: 1600));
     if (!mounted) return;
-
-    final user = FirebaseAuth.instance.currentUser;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) =>
-            user != null ? const NewHomePage() : const loginScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => AuthGate()));
   }
 
   @override

@@ -32,6 +32,7 @@ class DeepLinkService {
               description: event["description"] ?? "",
               imageUrl: event["imageUrl"] ?? "",
               did: eventId,
+              regisCount: event["regisCount"],
             ),
           ),
         );

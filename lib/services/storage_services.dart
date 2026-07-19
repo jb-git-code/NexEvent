@@ -5,6 +5,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 class StorageService {
   final FirebaseStorage storage = FirebaseStorage.instance;
 
+  Future<String> uploadPfp(File image, String id) async {
+    final ref = storage.ref().child("profile_pics/$id.jpg");
+
+    await ref.putFile(image);
+
+    return await ref.getDownloadURL();
+  }
+
   Future<String> uploadPoster(File image, String eventId) async {
     final ref = storage.ref().child("event_posters/$eventId.jpg");
 

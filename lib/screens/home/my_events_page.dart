@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/screens/home/user_registrations.dart';
 import 'package:nexevent/services/firestore_service.dart';
-import 'package:nexevent/ui/colors.dart';
+import 'package:nexevent/ui/app_colors.dart';
 
 /// Small local text-style set so this screen doesn't depend on a
 /// separate typography file. Feel free to move these into AppColors'
@@ -70,6 +71,7 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('Your Passes')),
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: StreamBuilder(
@@ -82,7 +84,7 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(child: _buildHeader(docs.length)),
+                // SliverToBoxAdapter(child: _buildHeader(docs.length)),
                 if (isLoading || !snapshot.hasData)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -120,87 +122,6 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  // ── Header ──────────────────────────────────────────────
-  Widget _buildHeader(int count) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primaryDark],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.28),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('My Events', style: _Text.h2.copyWith(color: Colors.white)),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  LucideIcons.calendarCheck,
-                  size: 18,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Every pass you\'ve claimed, in one place.',
-            style: _Text.bodySecondary.copyWith(
-              color: Colors.white.withOpacity(0.78),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(LucideIcons.ticket, size: 15, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  count == 0
-                      ? 'No active passes'
-                      : '$count active ${count == 1 ? 'pass' : 'passes'}',
-                  style: _Text.bodySecondary.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -245,7 +166,11 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
   }
 
   // ── Cancel confirmation ─────────────────────────────────
-  static void _confirmCancel(BuildContext context, String regId) {
+  static void _confirmCancel(
+    BuildContext context,
+    String regId,
+    String eventId,
+  ) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -312,7 +237,10 @@ class _MyEventsPageState extends ConsumerState<MyEventsPage> {
                         ),
                       ),
                       onPressed: () async {
-                        await FirestoreService().cancelRegistration(regId);
+                        await FirestoreService().cancelRegistration(
+                          regId,
+                          eventId,
+                        );
                         if (context.mounted) Navigator.pop(context);
                       },
                       child: const Text(
@@ -348,7 +276,7 @@ class _TicketFuture extends ConsumerWidget {
 
   final Map<String, dynamic> regData;
   final Color Function(String?) categoryColor;
-  final void Function(BuildContext, String) onCancel;
+  final void Function(BuildContext, String, String) onCancel;
 
   // Matches the off-white scaffold background this card sits on —
   // used to fake the punched-hole notches in the tear-line.
@@ -502,24 +430,43 @@ class _TicketFuture extends ConsumerWidget {
                         ),
 
                         // QR stub
-                        SizedBox(
-                          width: _stubWidth,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(LucideIcons.qrCode, size: 22, color: accent),
-                              const SizedBox(height: 6),
-                              Text(
-                                'View\npass',
-                                textAlign: TextAlign.center,
-                                style: _Text.caption.copyWith(
-                                  fontSize: 10,
-                                  height: 1.2,
-                                  color: AppColors.muted,
+                        Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Opacity(
+                                opacity: 1,
+
+                                child: SvgPicture.asset(
+                                  "assets/bg/blob-scene-haikei.svg",
+
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            SizedBox(
+                              width: _stubWidth,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    LucideIcons.qrCode,
+                                    size: 22,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'View\npass',
+                                    textAlign: TextAlign.center,
+                                    style: _Text.caption.copyWith(
+                                      fontSize: 10,
+                                      height: 1.2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -536,7 +483,7 @@ class _TicketFuture extends ConsumerWidget {
                 top: -8,
                 right: -6,
                 child: GestureDetector(
-                  onTap: () => onCancel(context, regId),
+                  onTap: () => onCancel(context, regId, eventId),
                   child: Container(
                     width: 26,
                     height: 26,

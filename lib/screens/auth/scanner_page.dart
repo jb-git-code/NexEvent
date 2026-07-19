@@ -360,7 +360,6 @@ class _ScannerMaskPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Animated horizontal line that sweeps up and down inside the scan frame.
 class _ScanLine extends StatefulWidget {
   const _ScanLine();
 

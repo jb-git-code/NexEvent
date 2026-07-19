@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:nexevent/screens/home/home_page.dart';
 import 'package:nexevent/screens/auth/login_screen.dart';
 import 'package:nexevent/services/auth_service.dart';
 import 'package:nexevent/ui/new_home_page.dart';
@@ -63,25 +62,11 @@ class _SignupScreenState extends State<SignupScreen> {
         tag: 'Default',
         roll: rollNumber,
       );
-
-      
     } on FirebaseAuthException catch (e) {
       final eSnackbar = SnackBar(content: Text(e.toString()));
       ScaffoldMessenger.of(context).showSnackBar(eSnackbar);
     }
   }
-
-  // Future<void> handleButtonPress() async {
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-
-  //   await Future.delayed(const Duration(seconds: 3));
-
-  //   setState(() {
-  //     isLoading = false;
-  //   });
-  // }
 
 
   List<String> roles = ['student', 'admin'];
@@ -158,7 +143,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       }
                       return null;
                     },
+
                     decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
                       hintText: 'Enter your name',
                       labelText: 'Full Name',
                       prefixIcon: Icon(Icons.person_outline_rounded),
@@ -181,6 +168,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     },
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
                       hintText: 'Enter your email',
                       labelText: 'College Email Address ',
                       prefixIcon: Icon(Icons.email_outlined),
@@ -236,73 +224,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     },
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
                       hintText: 'Enter your password',
                       labelText: 'Password',
                       prefixIcon: Icon(Icons.lock_outlined),
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Role Selection
-                  // Container(
-                  //   padding: const EdgeInsets.all(16),
-                  //   decoration: BoxDecoration(
-                  //     color: const Color(0xFFF3F4F6),
-                  //     borderRadius: BorderRadius.circular(16),
-                  //   ),
-                  //   child: Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: <Widget>[
-                  //       Text(
-                  //         'Select Your Role',
-                  //         style: TextStyle(
-                  //           fontSize: 14,
-                  //           fontWeight: FontWeight.bold,
-                  //           color: Colors.grey[700],
-                  //         ),
-                  //       ),
-                  //       const SizedBox(height: 12.0),
-                  //       Wrap(
-                  //         spacing: 8.0,
-                  //         children: List<Widget>.generate(2, (int index) {
-                  //           final isSelected = _value == index;
-                  //           return ChoiceChip(
-                  //             label: Text(
-                  //               roles[index].toUpperCase(),
-                  //               style: TextStyle(
-                  //                 color: isSelected
-                  //                     ? Colors.white
-                  //                     : Colors.grey[700],
-                  //                 fontWeight: FontWeight.bold,
-                  //                 fontSize: 13,
-                  //               ),
-                  //             ),
-                  //             selected: isSelected,
-                  //             selectedColor: primaryColor,
-                  //             backgroundColor: Colors.white,
-                  //             checkmarkColor: Colors.white,
-                  //             side: BorderSide(
-                  //               color: isSelected
-                  //                   ? primaryColor
-                  //                   : Colors.grey[300]!,
-                  //               width: 1,
-                  //             ),
-                  //             shape: RoundedRectangleBorder(
-                  //               borderRadius: BorderRadius.circular(10),
-                  //             ),
-                  //             onSelected: (bool selected) {
-                  //               setState(() {
-                  //                 _value = selected ? index : null;
-                  //                 role = roles[index];
-                  //               });
-                  //             },
-                  //           );
-                  //         }).toList(),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 32),
 
                   // Submit Button
                   ElevatedButton(
@@ -332,7 +260,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         Navigator.pushAndRemoveUntil(
                           context,
 
-                          MaterialPageRoute(builder: (_) => const NewHomePage()),
+                          MaterialPageRoute(
+                            builder: (_) => const NewHomePage(),
+                          ),
 
                           (route) => false,
                         );

@@ -1,56 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nexevent/ui/gymkhana/boards.dart';
+import 'package:nexevent/ui/gymkhana/boards_config.dart';
 
-class NexEventExplorePoly extends StatelessWidget {
-  const NexEventExplorePoly({super.key});
+/// ---------------------------------------------------------------------
+/// Explore page — page CONTENT only (no Scaffold/bottom nav, since your
+/// app already has a shared nav shell around it).
+///
+/// Grid cards come from `boardConfigs` (board_config.dart) — add a new
+/// entry there whenever a new board is introduced; nothing here needs
+/// to change.
+/// ---------------------------------------------------------------------
 
-  static const _text = Color(0xFF14151A);
-  static const _muted = Color(0xFF8A8D9A);
-  static const _card = Color(0xFFF3F4F7);
-  static const _primary = Color(0xFF4361EE);
+class ExplorePage extends StatefulWidget {
+  const ExplorePage({super.key});
 
-  static const _categories = [
-    _Category('Workshops', Icons.build_rounded, Color(0xFF4361EE)),
-    _Category('Cultural', Icons.theater_comedy_rounded, Color(0xFF9B6BFF)),
-    _Category('Tech', Icons.memory_rounded, Color(0xFF20C997)),
-    _Category('Sports', Icons.sports_soccer_rounded, Color(0xFFFF9F43)),
-    _Category('Market', Icons.storefront_rounded, Color(0xFFEE6C9C)),
-  ];
+  @override
+  State<ExplorePage> createState() => _ExplorePageState();
+}
 
-  static const _trending = [
-    _Trending('Hackathon 24hr', 'Tech Club', Color(0xFF20C997)),
-    _Trending('Cultural Night', 'Unnati Society', Color(0xFF9B6BFF)),
-    _Trending('Football Finals', 'Sports Committee', Color(0xFFFF9F43)),
-  ];
+class _ExplorePageState extends State<ExplorePage> {
+  final _searchController = TextEditingController();
 
-  static const _clubs = [
-    _Club(
-      'Photography Club',
-      '1.2k members',
-      Icons.camera_alt_rounded,
-      Color(0xFFEE6C9C),
-    ),
-    _Club(
-      'Robotics Society',
-      '860 members',
-      Icons.smart_toy_rounded,
-      Color(0xFF20C997),
-    ),
-    _Club(
-      'Debate Circle',
-      '540 members',
-      Icons.record_voice_over_rounded,
-      Color(0xFF4361EE),
-    ),
-  ];
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Explore',
@@ -62,245 +48,118 @@ class NexEventExplorePoly extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 16),
-            _searchBar(),
-            const SizedBox(height: 22),
-            _categoryRow(),
-            const SizedBox(height: 28),
-            _sectionHeader('Trending Now'),
-            const SizedBox(height: 14),
-            _trendingRail(),
-            const SizedBox(height: 28),
-            _sectionHeader('Clubs for You'),
-            const SizedBox(height: 14),
-            ..._clubs.map(_clubTile),
+            const SizedBox(height: 8),
+            Text(
+              'Discover Your Campus',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.white,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+        children: [
+          _SearchBar(controller: _searchController),
+          const SizedBox(height: 28),
+
+          const SizedBox(height: 20),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: boardConfigs.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 0.95,
+            ),
+            itemBuilder: (context, i) => _BoardGridCard(card: boardConfigs[i]),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  final TextEditingController controller;
+  const _SearchBar({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: 'Search clubs, events, users...',
+        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFF14202E), width: 1.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFF14202E), width: 1.5),
+        ),
+      ),
+      // TODO: wire this up to real search once you decide where results
+      // should go (its own results page? filters the grid below?).
+    );
+  }
+}
+
+class _BoardGridCard extends StatelessWidget {
+  final BoardConfig card;
+  const _BoardGridCard({required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => BoardPage(board: card.board)));
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              card.assetPath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  Container(color: const Color(0xFF14202E)),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.65)],
+                  stops: const [0.4, 1.0],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 14,
+              bottom: 14,
+              child: Text(
+                card.label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-
-  Widget _searchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: const [
-          Icon(Icons.search_rounded, color: _muted, size: 20),
-          SizedBox(width: 10),
-          Text(
-            'Search events, clubs, people…',
-            style: TextStyle(color: _muted, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _categoryRow() {
-    return SizedBox(
-      height: 84,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
-        itemBuilder: (_, i) {
-          final c = _categories[i];
-          return Column(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: c.color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(c.icon, color: c.color, size: 24),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                c.label,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: _text,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _sectionHeader(String title) {
-    return Row(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 19,
-            fontWeight: FontWeight.w700,
-            color: _text,
-          ),
-        ),
-        const Spacer(),
-        const Text(
-          'See all',
-          style: TextStyle(
-            fontSize: 13,
-            color: _primary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _trendingRail() {
-    return SizedBox(
-      height: 150,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _trending.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
-        itemBuilder: (_, i) {
-          final t = _trending[i];
-          return Container(
-            width: 190,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [t.color, t.color.withOpacity(0.75)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Trending',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  t.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  t.host,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _clubTile(_Club c) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: c.color.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(c.icon, color: c.color, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  c.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: _text,
-                  ),
-                ),
-                Text(
-                  c.members,
-                  style: const TextStyle(fontSize: 12, color: _muted),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: c.color,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Text(
-              'Join',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Category {
-  final String label;
-  final IconData icon;
-  final Color color;
-  const _Category(this.label, this.icon, this.color);
-}
-
-class _Trending {
-  final String title;
-  final String host;
-  final Color color;
-  const _Trending(this.title, this.host, this.color);
-}
-
-class _Club {
-  final String name;
-  final String members;
-  final IconData icon;
-  final Color color;
-  const _Club(this.name, this.members, this.icon, this.color);
 }

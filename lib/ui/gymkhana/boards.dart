@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nexevent/ui/clubs/channel_detail_page.dart';
-import 'package:nexevent/ui/comm.dart'
-    show ChannelModel, CommunityRepository, iconFor;
+import 'package:nexevent/ui/comm.dart'show ChannelModel, CommunityRepository, iconFor;
 import 'package:nexevent/ui/gymkhana/boards_config.dart';
+
 
 /// ---------------------------------------------------------------------
 /// One generic page for every board — pass a different `board` string
@@ -40,11 +40,7 @@ class _BoardPageState extends State<BoardPage> {
         builder: (context, snap) {
           final channels = snap.data ?? [];
           final filtered = channels
-              .where(
-                (c) =>
-                    _query.isEmpty ||
-                    c.name.toLowerCase().contains(_query.toLowerCase()),
-              )
+              .where((c) => _query.isEmpty || c.name.toLowerCase().contains(_query.toLowerCase()))
               .toList();
 
           return CustomScrollView(
@@ -123,18 +119,14 @@ class _BoardBanner extends StatelessWidget {
               Image.asset(
                 config.assetPath,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox.shrink(),
+                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
               ),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.35),
-                    Colors.black.withOpacity(0.6),
-                  ],
+                  colors: [Colors.black.withOpacity(0.35), Colors.black.withOpacity(0.6)],
                 ),
               ),
               padding: const EdgeInsets.fromLTRB(16, 44, 16, 24),
@@ -153,7 +145,7 @@ class _BoardBanner extends StatelessWidget {
                     controller: controller,
                     onChanged: onSearchChanged,
                     decoration: InputDecoration(
-                      hintText: 'Explore Clubs...',
+                      hintText: 'Search bodies...',
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
                       filled: true,
                       fillColor: Colors.white,
@@ -202,9 +194,7 @@ class ClubTile extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ChannelDetailPage(channel: channel),
-          ),
+          MaterialPageRoute(builder: (_) => ChannelDetailPage(channel: channel)),
         );
       },
       child: Padding(
@@ -220,11 +210,7 @@ class ClubTile extends StatelessWidget {
                     ? Image.network(channel.logoUrl!, fit: BoxFit.cover)
                     : Container(
                         color: const Color(0xFF14202E),
-                        child: Icon(
-                          iconFor(channel.icon),
-                          color: Colors.white,
-                          size: 30,
-                        ),
+                        child: Icon(iconFor(channel.icon), color: Colors.white, size: 30),
                       ),
               ),
             ),
@@ -235,10 +221,7 @@ class ClubTile extends StatelessWidget {
                 children: [
                   Text(
                     channel.name,
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 2),
                   // Per your call: this comes straight from the channel
@@ -253,11 +236,7 @@ class ClubTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(
-                        Icons.people_alt,
-                        size: 16,
-                        color: Colors.blue.shade700,
-                      ),
+                      Icon(Icons.people_alt, size: 16, color: Colors.blue.shade700),
                       const SizedBox(width: 4),
                       Text(
                         '${channel.memberCount}',
@@ -268,13 +247,7 @@ class ClubTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        'members',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blue.shade400,
-                        ),
-                      ),
+                      Text('senti', style: TextStyle(fontSize: 14, color: Colors.blue.shade400)),
                     ],
                   ),
                 ],

@@ -1,9 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nexevent/firebase_options.dart';
 import 'package:nexevent/screens/auth/auth_gate.dart';
 import 'package:nexevent/services/notification_service.dart';
+import 'package:nexevent/ui/splash_screen/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +27,12 @@ class MyApp extends StatelessWidget {
       // Once dark mode is ready: add AppTheme.dark, wire `darkTheme:`
       // here, and set `themeMode:` — no page code needs to change,
       // since pages read AppColors.of(context) / AppTextStyles.of(context).
-      home: const AuthGate(),
+      theme: ThemeData(
+        useMaterial3: true,
+
+        fontFamily: GoogleFonts.quicksand().fontFamily,
+      ),
+      home: const SplashScreen(),
     );
   }
 }

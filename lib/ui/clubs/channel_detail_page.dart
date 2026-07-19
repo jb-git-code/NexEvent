@@ -1,9 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:nexevent/models/event_model.dart';
 import 'package:nexevent/ui/comm.dart'
     show ChannelModel, AnnouncementModel, iconFor;
 
@@ -63,7 +60,6 @@ class _ChannelDetailPageState extends State<ChannelDetailPage> {
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final channel = widget.channel;
-    print('channel -> ${channel.channelId}');
 
     return DefaultTabController(
       length: 3, // About, People — Events skipped for now (see TODO above)
@@ -102,7 +98,7 @@ class _ChannelDetailPageState extends State<ChannelDetailPage> {
                       children: [
                         _AboutTab(channel: channel),
                         _PeopleTab(channelId: channel.channelId),
-                        _EventsTab(channelId: channel.channelId),
+                        _eventsTab(),
                       ],
                     ),
                   );
@@ -453,46 +449,12 @@ class _PeopleTab extends StatelessWidget {
   }
 }
 
-// Events Tab
-
-class _EventsTab extends StatelessWidget {
-  const _EventsTab({super.key, required this.channelId});
-
-  final String channelId;
+class _eventsTab extends StatelessWidget {
+  const _eventsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('events')
-          .where('channelId', isEqualTo: channelId)
-          // .orderBy('createdAt', descending: true)
-          .limit(10)
-          .snapshots(),
-      builder: (context, snap) {
-        if (!snap.hasData) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final channelEvents = snap.data!.docs.map(EventModel.fromDoc).toList();
-        if (channelEvents.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              'No events yet',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          );
-        }
-        return Column(
-          children: [
-            for (final a in channelEvents) EventHorizontalCard(event: a),
-          ],
-        );
-      },
-    );
+    return Center(child: Text('No events found'));
   }
 }
 
@@ -561,161 +523,6 @@ class _BottomBar extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// club events ka card
-class EventHorizontalCard extends StatelessWidget {
-  final EventModel event;
-  final VoidCallback? onTap;
-
-  const EventHorizontalCard({super.key, required this.event, this.onTap});
-
-  String getStatus() {
-    if (event.isCancelled) return "Cancelled";
-
-    final now = DateTime.now();
-
-    if (now.isBefore(event.eventDate)) {
-      return "Upcoming";
-    } else if (now.isAfter(event.endDate)) {
-      return "Ended";
-    } else {
-      return "Ongoing";
-    }
-  }
-
-  Color getStatusColor() {
-    switch (getStatus()) {
-      case "Upcoming":
-        return Colors.blue;
-      case "Ongoing":
-        return Colors.green;
-      case "Ended":
-        return Colors.grey;
-      case "Cancelled":
-        return Colors.red;
-      default:
-        return Colors.black;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-
-      child: Container(
-        height: 120,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 8,
-              color: Colors.black.withOpacity(.08),
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            /// Event Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: CachedNetworkImage(
-                imageUrl: event.imageUrl,
-                width: 95,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (_, __) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorWidget: (_, __, ___) => Container(
-                  width: 95,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.image),
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 14),
-
-            /// Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// Title
-                  Text(
-                    event.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  /// Status
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: getStatusColor().withOpacity(.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      getStatus(),
-                      style: TextStyle(
-                        color: getStatusColor(),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-
-                  // const Spacer(),
-
-                  /// Date
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today,
-                        size: 15,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 5),
-                      Expanded(
-                        child: Text(
-                          DateFormat(
-                            "dd MMM • hh:mm a",
-                          ).format(event.eventDate),
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  /// Venue
-                  /// Registrations
-                ],
               ),
             ),
           ],

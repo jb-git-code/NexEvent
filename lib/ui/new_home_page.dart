@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexevent/models/user_model.dart';
 import 'package:nexevent/providers/user_provider.dart';
-import 'package:nexevent/screens/home/events_page.dart';
+import 'package:nexevent/ui/feed.dart';
 import 'package:nexevent/ui/comm.dart';
 import 'package:nexevent/ui/explore.dart';
-import 'package:nexevent/ui/feed.dart';
 import 'package:nexevent/ui/dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NewHomePage extends ConsumerStatefulWidget {
   const NewHomePage({super.key});
@@ -22,8 +22,8 @@ class _NewHomePageState extends ConsumerState<NewHomePage> {
   final _pages = const [
     NexEventDashboardPoly(),
     EventsPage(),
-    NexEventExplorePoly(),
-    NexEventCommunitiesPoly(),
+    ExplorePage(),
+    CommunityPage(),
   ];
 
   Future<void> loadUser() async {
@@ -47,12 +47,6 @@ class _NewHomePageState extends ConsumerState<NewHomePage> {
     final user = UserModel.fromMap(doc.data()!);
 
     ref.read(currentUserProvider.notifier).setUser(user);
-
-    // if (mounted) {
-    //   setState(() {
-    //     isLoading = false;
-    //   });
-    // }
   }
 
   @override
@@ -64,11 +58,15 @@ class _NewHomePageState extends ConsumerState<NewHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    print('enter homepage');
     return Scaffold(
+      backgroundColor: Colors.white,
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NexEventBottomNav(
         currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
+        onTap: (i) => setState(() {
+          _index = i;
+        }),
       ),
     );
   }
