@@ -32,6 +32,7 @@ class AuthService {
       "batch": batch,
       "branch": branch,
       "tag": tag,
+      "joinedChannels": ["general"],
     });
   }
 
@@ -46,9 +47,6 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    print("Logout clicked");
     await _auth.signOut();
-
-    print("Logout done");
   }
 }

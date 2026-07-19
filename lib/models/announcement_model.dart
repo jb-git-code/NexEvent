@@ -5,6 +5,7 @@ class AnnouncementModel {
   final String author;
   final DateTime createdAt;
   final bool isPinned;
+  final String channelId;
 
   AnnouncementModel({
     required this.id,
@@ -12,7 +13,8 @@ class AnnouncementModel {
     required this.content,
     required this.author,
     required this.createdAt,
-    required this.isPinned
+    required this.isPinned,
+    required this.channelId,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,13 +24,12 @@ class AnnouncementModel {
       "content": content,
       "author": author,
       "createdAt": createdAt,
-      "isPinned" :isPinned,
+      "isPinned": isPinned,
+      "channelId": channelId,
     };
   }
 
-  factory AnnouncementModel.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AnnouncementModel.fromMap(Map<String, dynamic> map) {
     return AnnouncementModel(
       id: map["id"],
       title: map["title"],
@@ -36,6 +37,7 @@ class AnnouncementModel {
       author: map["author"],
       createdAt: map["createdAt"].toDate(),
       isPinned: map["isPinned"] ?? false,
+      channelId: map["channelId"] ?? 'announcements',
     );
   }
 }

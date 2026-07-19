@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexevent/models/registration_model.dart';
 import 'package:nexevent/providers/registration_provider.dart';
 import 'package:nexevent/providers/user_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';

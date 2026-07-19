@@ -23,6 +23,7 @@ class EventDetailPage extends StatefulWidget {
     this.isCancelled = false,
     this.eventDateText = '',
     this.endDateText = '',
+    required this.regisCount,
   });
 
   final String name;
@@ -35,6 +36,7 @@ class EventDetailPage extends StatefulWidget {
   final bool isCancelled;
   final String eventDateText;
   final String endDateText;
+  final int regisCount;
 
   @override
   State<EventDetailPage> createState() => _EventDetailPageState();
@@ -186,22 +188,31 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                 fit: StackFit.expand,
                                 children: [
                                   (widget.imageUrl.isNotEmpty)
-                                      ? CachedNetworkImage(
-                                          imageUrl: widget.imageUrl,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) =>
-                                              const Center(
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: Color(0xFF111111),
-                                                    ),
-                                              ),
-                                          errorWidget: (context, url, error) =>
-                                              const Icon(
-                                                Icons.broken_image_rounded,
-                                                size: 28,
-                                              ),
+                                      ? Hero(
+                                          tag: widget.eventId,
+                                          child: CachedNetworkImage(
+                                            imageUrl: widget.imageUrl,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                const Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: Color(
+                                                          0xFF111111,
+                                                        ),
+                                                      ),
+                                                ),
+                                            errorWidget:
+                                                (
+                                                  context,
+                                                  url,
+                                                  error,
+                                                ) => const Icon(
+                                                  Icons.broken_image_rounded,
+                                                  size: 28,
+                                                ),
+                                          ),
                                         )
                                       : Container(
                                           color: const Color(0xFFEEF2FF),
@@ -265,15 +276,36 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             const SizedBox(height: 18),
 
                             // ---- Title ----
-                            Text(
-                              widget.name,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF111111),
-                                letterSpacing: -0.5,
-                                height: 1.2,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  widget.name,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF111111),
+                                    letterSpacing: -0.5,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                Spacer(),
+                                Icon(
+                                  Icons.people,
+                                  color: Colors.black,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.regisCount.toString(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 16),
 
@@ -373,7 +405,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                           name: widget.name,
                                           description: widget.description,
                                           venue: widget.venue,
-                                          category: 'event',
+                                          channelId: 'general',
                                           imageUrl: widget.imageUrl,
                                           eventDate:
                                               parseFormattedDate(
@@ -386,6 +418,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                               ) ??
                                               DateTime.now(),
                                           isCancelled: false,
+                                          regisCount: widget.regisCount,
                                         ).toMap(),
                                       ),
                                     ),

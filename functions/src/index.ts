@@ -12,7 +12,7 @@ export const sendAnnouncementNotification =
       if (!data) return;
 
       await admin.messaging().send({
-        topic: "announcements",
+        topic: data.channelId,
 
         notification: {
           title: `📢 ${data.title}`,
