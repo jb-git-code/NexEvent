@@ -1,21 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'lost_found_detail_page.dart';
 import 'report_item_page.dart';
 
-/// ---------------------------------------------------------------------
-/// DATA MODEL — maps to lostAndFound/{id} docs
-/// ---------------------------------------------------------------------
 class LostFoundItem {
   final String id;
-  final String type; // "lost" | "found"
+  final String type;
   final String title;
   final String description;
   final String category;
   final String? imageUrl;
   final String location;
-  final String status; // "open" | "resolved"
+  final String status;
   final String reporterId;
   final String reporterName;
   final String? contactInfo;
@@ -55,18 +51,18 @@ class LostFoundItem {
   }
 
   Map<String, dynamic> toMap() => {
-        'type': type,
-        'title': title,
-        'description': description,
-        'category': category,
-        'imageUrl': imageUrl,
-        'location': location,
-        'status': status,
-        'reporterId': reporterId,
-        'reporterName': reporterName,
-        'contactInfo': contactInfo,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
+    'type': type,
+    'title': title,
+    'description': description,
+    'category': category,
+    'imageUrl': imageUrl,
+    'location': location,
+    'status': status,
+    'reporterId': reporterId,
+    'reporterName': reporterName,
+    'contactInfo': contactInfo,
+    'createdAt': FieldValue.serverTimestamp(),
+  };
 }
 
 const List<String> lostFoundCategories = [
@@ -87,24 +83,23 @@ const Map<String, IconData> categoryIcons = {
   'other': Icons.inventory_2,
 };
 
-String categoryLabel(String category) =>
-    category.isEmpty ? 'Other' : '${category[0].toUpperCase()}${category.substring(1)}';
+String categoryLabel(String category) => category.isEmpty
+    ? 'Other'
+    : '${category[0].toUpperCase()}${category.substring(1)}';
 
-/// ---------------------------------------------------------------------
-/// REPOSITORY
-/// ---------------------------------------------------------------------
 class LostFoundRepository {
   final _db = FirebaseFirestore.instance;
 
-  /// type: pass 'lost' or 'found' to filter, null for everything.
+  // type: pass 'lost' or 'found' to filter, null for everything.
   Stream<List<LostFoundItem>> itemsStream({String? type}) {
     Query<Map<String, dynamic>> query = _db.collection('lostAndFound');
     if (type != null) {
       query = query.where('type', isEqualTo: type);
     }
-    return query.orderBy('createdAt', descending: true).snapshots().map(
-          (snap) => snap.docs.map(LostFoundItem.fromDoc).toList(),
-        );
+    return query
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map(LostFoundItem.fromDoc).toList());
   }
 
   Future<void> createItem(LostFoundItem item) async {
@@ -116,10 +111,6 @@ class LostFoundRepository {
   }
 }
 
-/// ---------------------------------------------------------------------
-/// PAGE — page CONTENT only if you're embedding it in a tab; wrap with
-/// your own Scaffold/AppBar if it needs to be a standalone route.
-/// ---------------------------------------------------------------------
 class LostFoundPage extends StatefulWidget {
   const LostFoundPage({super.key});
 
@@ -127,7 +118,8 @@ class LostFoundPage extends StatefulWidget {
   State<LostFoundPage> createState() => _LostFoundPageState();
 }
 
-class _LostFoundPageState extends State<LostFoundPage> with SingleTickerProviderStateMixin {
+class _LostFoundPageState extends State<LostFoundPage>
+    with SingleTickerProviderStateMixin {
   final _repo = LostFoundRepository();
   late TabController _tabController;
 
@@ -150,13 +142,19 @@ class _LostFoundPageState extends State<LostFoundPage> with SingleTickerProvider
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5F5F5),
         elevation: 0,
-        title: const Text('Lost & Found', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
+        title: const Text(
+          'Lost & Found',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: const Color(0xFF1F3A5F),
           unselectedLabelColor: Colors.grey,
           indicatorColor: const Color(0xFF1F3A5F),
-          tabs: const [Tab(text: 'Lost'), Tab(text: 'Found')],
+          tabs: const [
+            Tab(text: 'Lost'),
+            Tab(text: 'Found'),
+          ],
         ),
       ),
       body: TabBarView(
@@ -171,9 +169,9 @@ class _LostFoundPageState extends State<LostFoundPage> with SingleTickerProvider
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Report Item', style: TextStyle(color: Colors.white)),
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ReportItemPage()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ReportItemPage()));
         },
       ),
     );
@@ -195,7 +193,10 @@ class _ItemList extends StatelessWidget {
         final items = snap.data!;
         if (items.isEmpty) {
           return Center(
-            child: Text('Nothing here yet', style: TextStyle(color: Colors.grey.shade600)),
+            child: Text(
+              'Nothing here yet',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
           );
         }
         return ListView.separated(
@@ -259,26 +260,39 @@ class _ItemCard extends StatelessWidget {
                       item.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '${categoryLabel(item.category)} • ${item.location}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                     if (isResolved) ...[
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.green.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           'Resolved',
-                          style: TextStyle(fontSize: 11, color: Colors.green.shade800, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.green.shade800,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],

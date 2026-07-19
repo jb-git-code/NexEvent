@@ -124,23 +124,80 @@ class LostFoundDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-          // else if (!isResolved && item.contactInfo != null && item.contactInfo!.isNotEmpty)
-          //   SizedBox(
-          //     width: double.infinity,
-          //     child: ElevatedButton.icon(
-          //       onPressed: () {
-          //         // TODO: launch tel:/mailto: with item.contactInfo, or
-          //         // open in-app chat once that exists.
-          //       },
-          //       icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-          //       label: const Text('Contact Reporter', style: TextStyle(color: Colors.white, fontSize: 16)),
-          //       style: ElevatedButton.styleFrom(
-          //         backgroundColor: const Color(0xFF3D5AFE),
-          //         padding: const EdgeInsets.symmetric(vertical: 16),
-          //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          //       ),
-          //     ),
-          //   ),
+          if (!isResolved &&
+              item.contactInfo != null &&
+              item.contactInfo!.isNotEmpty)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+
+                    builder: (_) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+
+                          children: [
+                            Icon(Icons.info, size: 60, color: Colors.black),
+
+                            const SizedBox(height: 18),
+
+                            Text(
+                              item.contactInfo!,
+
+                              textAlign: TextAlign.center,
+
+                              style: const TextStyle(
+                                fontSize: 16,
+
+                                height: 1.5,
+
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            SizedBox(
+                              width: double.infinity,
+
+                              child: FilledButton(
+                                onPressed: () => Navigator.pop(context),
+
+                                child: const Text("OK"),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.chat_bubble_outline,
+                  color: Colors.white,
+                ),
+                label: const Text(
+                  'Contact Reporter',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3D5AFE),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
